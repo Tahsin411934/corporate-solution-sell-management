@@ -1,0 +1,8 @@
+{
+    "name": "modules/expense",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Expense\\": "app/"
+        }
+    }
+}

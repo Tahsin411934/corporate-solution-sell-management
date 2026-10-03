@@ -1,0 +1,8 @@
+{
+    "name": "Invoice",
+    "alias": "invoice",
+    "providers": [
+        "Modules\\Invoice\\Providers\\InvoiceServiceProvider"
+    ],
+    "files": []
+}

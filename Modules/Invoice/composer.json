@@ -1,0 +1,11 @@
+{
+    "name": "modules/invoice",
+    "require": {
+        "ext-bcmath": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Invoice\\": "app/"
+        }
+    }
+}

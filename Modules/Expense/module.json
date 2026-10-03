@@ -1,0 +1,8 @@
+{
+    "name": "Expense",
+    "alias": "expense",
+    "providers": [
+        "Modules\\Expense\\Providers\\ExpenseServiceProvider"
+    ],
+    "files": []
+}

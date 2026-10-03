@@ -1,0 +1,1 @@
+{"name":"Report","alias":"report","providers":["Modules\\Report\\Providers\\ReportServiceProvider"],"files":[]}

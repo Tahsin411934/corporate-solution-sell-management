@@ -1,0 +1,1 @@
+{"name":"modules/service","autoload":{"psr-4":{"Modules\\Service\\":"app/"}}}

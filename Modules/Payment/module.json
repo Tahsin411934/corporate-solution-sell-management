@@ -1,0 +1,8 @@
+{
+    "name": "Payment",
+    "alias": "payment",
+    "providers": [
+        "Modules\\Payment\\Providers\\PaymentServiceProvider"
+    ],
+    "files": []
+}

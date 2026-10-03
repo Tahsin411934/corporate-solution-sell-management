@@ -1,0 +1,8 @@
+{
+    "name": "ReferralSource",
+    "alias": "referralsource",
+    "providers": [
+        "Modules\\ReferralSource\\Providers\\ReferralSourceServiceProvider"
+    ],
+    "files": []
+}

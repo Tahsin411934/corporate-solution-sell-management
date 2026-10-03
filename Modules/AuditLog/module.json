@@ -1,0 +1,8 @@
+{
+    "name": "AuditLog",
+    "alias": "auditlog",
+    "providers": [
+        "Modules\\AuditLog\\Providers\\AuditLogServiceProvider"
+    ],
+    "files": []
+}

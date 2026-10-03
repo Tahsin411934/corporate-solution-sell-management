@@ -1,0 +1,24 @@
+<x-app-layout>
+    @include('invoice::partials.styles')
+    <div class="p-6 space-y-4">
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ route('invoices.index') }}" class="text-primary underline">Back to invoices</a>
+            @can('invoices.print')<a href="{{ route('invoices.print', $invoice) }}" target="_blank" rel="noopener" class="bg-primary text-white rounded-lg px-4 py-2">Print invoice</a>@endcan
+            @if($invoice->status === 'draft')
+                @can('invoices.issue')<form action="{{ route('invoices.issue', $invoice) }}" method="POST">@csrf<button class="bg-primary text-white rounded-lg px-4 py-2">Issue invoice</button></form>@endcan
+            @endif
+        </div>
+        @if(session('success'))<p role="status" class="p-3 bg-green-50 text-green-800">{{ session('success') }}</p>@endif
+        @if($errors->any())<div role="alert" class="p-3 bg-red-50 text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
+        @include('invoice::partials.document')
+        @if($invoice->status !== 'cancelled' && $invoice->payments->isEmpty())
+            @can('invoices.cancel')
+                <form action="{{ route('invoices.cancel', $invoice) }}" method="POST" class="bg-white border rounded-xl p-5 space-y-3" onsubmit="return confirm('Cancel this invoice? This cannot be undone.');">
+                    @csrf
+                    <x-form-input label="Cancellation reason" name="cancellation_reason" :value="old('cancellation_reason')" maxlength="500" required />
+                    <button class="bg-red-600 text-white rounded-lg px-4 py-2">Cancel invoice</button>
+                </form>
+            @endcan
+        @endif
+    </div>
+</x-app-layout>

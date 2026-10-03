@@ -1,0 +1,8 @@
+{
+    "name": "modules/auditlog",
+    "autoload": {
+        "psr-4": {
+            "Modules\\AuditLog\\": "app/"
+        }
+    }
+}
