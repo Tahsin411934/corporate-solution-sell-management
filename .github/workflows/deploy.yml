@@ -66,18 +66,20 @@ jobs:
           lock_name=$(printf '%s' "$PWD" | sha256sum | cut -d ' ' -f 1)
           exec 9>"/tmp/invoice-deploy-${lock_name}.lock"
           flock -n 9 || { echo 'Another deployment is running'; exit 1; }
-          git diff --quiet || { echo 'Commit or back up server code changes first'; exit 1; }
-          git diff --cached --quiet
           git fetch origin main
           test "$(git rev-parse FETCH_HEAD)" = "$commit" || {
-            echo 'A newer commit exists. Run the latest workflow instead.'
-            exit 1
+            echo 'Skipping this commit because a newer push will deploy instead.'
+            exit 0
           }
-          git merge-base --is-ancestor HEAD "$commit"
+
+          # Preserve tracked server edits automatically; GitHub is the code source.
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            git stash push -m "Automatic pre-deploy backup $(date -u +%Y%m%dT%H%M%SZ)"
+          fi
 
           php artisan down --retry=60
           trap 'echo "Deployment failed. App remains in maintenance mode. Inspect the error before running php artisan up."' ERR
-          git merge --ff-only "$commit"
+          git reset --hard "$commit"
           test "$(git rev-parse HEAD)" = "$commit"
 
           if [ "$(id -u)" -eq 0 ]; then

@@ -37,7 +37,9 @@ any protection rules configured for that environment also apply.
 - Install compatible PHP and extensions (Laravel 12 needs PHP 8.2+), Composer,
   Git, npm, Node 20.19+ or 22.12+, and `flock`.
 - The target directory must contain the Git checkout and installed `vendor`.
-  Its origin must point to this repository and HEAD must be an ancestor of main.
+  Its origin must point to this repository. GitHub is the source of deployed code:
+  tracked local changes are automatically backed up in Git stash, then the checkout
+  is reset to the triggering commit. Local commits are not deployed.
 - The SSH user must own the checkout and be able to write `storage` and
   `bootstrap/cache`. PHP-FPM must also have the necessary runtime permissions.
 - For a private repository, separately configure the server's read-only GitHub
@@ -54,7 +56,8 @@ any protection rules configured for that environment also apply.
 
 Commit and push the workflow to main. Open the repository's Actions tab to inspect
 the deployment. A run checks server prerequisites, enters maintenance mode, pulls
-the exact triggering commit, installs dependencies, builds Vite assets, migrates
+the exact triggering commit (automatically stashing tracked server edits first),
+installs dependencies, builds Vite assets, migrates
 the database, caches Laravel configuration/routes/views and restarts queue workers.
 
 This is an in-place deployment with downtime, not an atomic release system.
@@ -65,3 +68,8 @@ not undo database changes. Do not generate a new APP_KEY during updates.
 
 Verify login, invoice printing/uploads and the other hosted applications after the
 first successful run. No deployment health URL has been assumed in this workflow.
+
+No `git clean` is run. Ignored `.env`, installed dependencies and uploaded files
+are retained; keep production secrets and uploads outside tracked code paths.
+View saved server edits with `git stash list`. Do not automatically apply a stash
+after deployment, as that would overwrite the newly deployed code.
