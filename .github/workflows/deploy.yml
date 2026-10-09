@@ -1,0 +1,114 @@
+name: Deploy Laravel to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: invoice-printer-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_USER: ${{ vars.VPS_USER || 'ubuntu' }}
+      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/var/www/invoice-printer' }}
+      DEPLOY_SHA: ${{ github.sha }}
+    steps:
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VPS_HOST" || { echo 'Missing VPS_HOST secret'; exit 1; }
+          test -n "$VPS_SSH_KEY" || { echo 'Missing VPS_SSH_KEY secret'; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          ssh-keyscan -T 20 -p "$VPS_PORT" -H "$VPS_HOST" > ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts || { echo 'Could not obtain VPS SSH host keys'; exit 1; }
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+
+      - name: Deploy application
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf -v remote_command 'bash -s -- %q %q' "$DEPLOY_PATH" "$DEPLOY_SHA"
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20 \
+            "$VPS_USER@$VPS_HOST" "$remote_command" <<'REMOTE'
+          set -euo pipefail
+          cd "$1"
+          commit="$2"
+
+          # This updates an existing, configured installation only.
+          test -f artisan
+          test -f .env
+          test -d vendor
+          command -v php >/dev/null
+          command -v composer >/dev/null
+          command -v npm >/dev/null
+          command -v flock >/dev/null
+          php -r 'exit(version_compare(PHP_VERSION, "8.2.0", ">=") ? 0 : 1);'
+          node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (!((major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major > 22)) { console.error("Vite 7 requires Node 20.19+ or 22.12+"); process.exit(1); }'
+          test -w storage
+          test -w bootstrap/cache
+
+          lock_name=$(printf '%s' "$PWD" | sha256sum | cut -d ' ' -f 1)
+          exec 9>"/tmp/invoice-deploy-${lock_name}.lock"
+          flock -n 9 || { echo 'Another deployment is running'; exit 1; }
+          git diff --quiet || { echo 'Commit or back up server code changes first'; exit 1; }
+          git diff --cached --quiet
+          git fetch origin main
+          test "$(git rev-parse FETCH_HEAD)" = "$commit" || {
+            echo 'A newer commit exists. Run the latest workflow instead.'
+            exit 1
+          }
+          git merge-base --is-ancestor HEAD "$commit"
+
+          php artisan down --retry=60
+          trap 'echo "Deployment failed. App remains in maintenance mode. Inspect the error before running php artisan up."' ERR
+          git merge --ff-only "$commit"
+          test "$(git rev-parse HEAD)" = "$commit"
+
+          if [ "$(id -u)" -eq 0 ]; then
+            export COMPOSER_ALLOW_SUPERUSER=1
+          fi
+          composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+          composer check-platform-reqs --no-dev
+
+          if [ -f package-lock.json ]; then
+            npm ci --include=dev
+          else
+            echo 'No package-lock.json found; using npm install. Commit lockfiles for reproducible deployments.'
+            npm install --include=dev --no-audit --no-fund
+          fi
+          npm run build
+          test -f public/build/manifest.json
+          # A development hot file would make production use the Vite dev server.
+          rm -f public/hot
+
+          php artisan config:clear
+          php artisan migrate --force --no-interaction
+          php artisan config:cache
+          php artisan view:cache
+          php artisan route:cache
+          php artisan queue:restart
+          php artisan up
+          trap - ERR
+          echo "Deployment completed: $commit"
+          REMOTE
+
+      - name: Remove temporary SSH key
+        if: always()
+        shell: bash
+        run: rm -f ~/.ssh/deploy_key
