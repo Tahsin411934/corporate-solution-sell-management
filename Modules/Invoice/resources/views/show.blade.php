@@ -13,8 +13,8 @@
         <p class="no-print text-sm text-gray-600"><strong>Referral source:</strong> {{ $invoice->referral_source ?: '—' }}</p>
         <div class="no-print flex flex-wrap gap-4 text-sm text-gray-700">
             <p><strong>Status:</strong> {{ $invoice->status === 'issued' ? 'Unpaid' : ucfirst($invoice->status) }}</p>
-            <p><strong>Total:</strong> {{ $invoice->total_amount }} {{ $invoice->currency_code }}</p>
-            <p><strong>Paid:</strong> {{ number_format((float) ($invoice->received_amount ?? 0), 2) }}</p>
+            <p><strong>Invoice total:</strong> {{ $invoice->total_amount }} {{ $invoice->currency_code }}</p>
+            <p><strong>Received:</strong> {{ number_format((float) ($invoice->received_amount ?? 0), 2) }}</p>
             <p><strong>Due:</strong> {{ bcsub($invoice->total_amount, (string) ($invoice->received_amount ?? '0'), 2) }}</p>
         </div>
         <div class="invoice-preview">@include('invoice::partials.document')</div>

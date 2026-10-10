@@ -11,9 +11,9 @@
             <div class="flex gap-3 items-center"><button class="bg-primary text-white rounded-lg px-4 py-2">Apply</button><a href="{{ route('reports.index', ['report' => $type]) }}" class="text-primary underline">Reset</a></div>
         </form>
         @if($type === 'customers')
-            <p class="text-sm text-amber-800 bg-amber-50 rounded-lg p-3">All-time balances from the database view; date filters do not apply. Includes draft and cancelled invoices. This view combines currencies per customer; use invoice balances for currency-specific figures.</p>
+            <p class="text-sm text-amber-800 bg-amber-50 rounded-lg p-3">All-time receivables from the database view; date filters do not apply. Includes draft and cancelled invoices. This view combines currencies per customer; use invoice dues for currency-specific figures.</p>
         @elseif($type === 'invoices')
-            <p class="text-sm text-gray-600">Filtered by invoice date. Balances include all non-deleted payments, regardless of payment date. Draft and cancelled invoices are included.</p>
+            <p class="text-sm text-gray-600">Filtered by invoice date. Due amounts include all non-deleted payments, regardless of payment date. Draft and cancelled invoices are included.</p>
         @elseif($type === 'profit')
             <p class="text-sm text-gray-600">Accrual gross profit = subtotal − discount − service costs, excluding tax, draft and cancelled invoices. Payments are not revenue. Expenses are reported separately: their schema has no currency, so net profit cannot safely be calculated across currencies. Do not count service costs again as expenses.</p>
         @elseif($type === 'expenses')

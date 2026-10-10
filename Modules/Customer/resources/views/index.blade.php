@@ -11,7 +11,7 @@
         id="customer"
         title="Customer"
         icon="fa-solid fa-users"
-        :columns="['Code', 'Customer', 'Phone', 'Email', 'Opening Balance', 'Actions']"
+        :columns="['Code', 'Customer', 'Phone', 'Email', 'Opening receivable', 'Actions']"
         :dt-columns="$customerTableColumns"
         ajax-url="{{ route('customers.data') }}"
         store-url="{{ route('customers.store') }}"
@@ -29,7 +29,7 @@
             <x-form-input label="Company name" name="company_name" id="customer_company_name" />
             <x-form-input label="Phone" name="phone" id="customer_phone" />
             <x-form-input label="Email" name="email" id="customer_email" type="email" />
-            <x-form-input label="Opening balance" name="opening_balance" id="customer_opening_balance" type="number" step="0.01" min="0" value="0" />
+            <x-form-input label="Opening receivable" name="opening_balance" id="customer_opening_balance" type="number" step="0.01" min="0" value="0" />
             <x-form-input label="TIN number" name="tin_number" id="customer_tin" />
             <x-form-input label="BIN number" name="bin_number" id="customer_bin" />
             <x-form-input label="Address" name="address" id="customer_address" />

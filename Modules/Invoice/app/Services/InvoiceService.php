@@ -37,7 +37,7 @@ class InvoiceService
             $invoice = $invoice->fresh('items');
             $paid = bcadd((string) ($data['initial_payment_amount'] ?? '0'), '0', 2);
             if (bccomp($paid, $invoice->total_amount, 2) > 0) {
-                throw ValidationException::withMessages(['initial_payment_amount' => 'Paid now cannot exceed the total bill.']);
+                throw ValidationException::withMessages(['initial_payment_amount' => 'Received now cannot exceed the total bill.']);
             }
             if (($data['save_mode'] ?? 'draft') === 'draft' && bccomp($paid, '0', 2) > 0) {
                 throw ValidationException::withMessages(['initial_payment_amount' => 'Draft invoices cannot receive payments.']);

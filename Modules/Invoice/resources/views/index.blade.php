@@ -4,7 +4,7 @@
             createPermission="invoices" buttonText="Create invoice" :buttonLink="route('invoices.create')"
             :ajaxUrl="route('invoices.data')"
             :stackedRows="true"
-            :columns="['Invoice number', 'Customer', 'Date', 'Currency', 'Total', 'Received', 'Balance', 'Status', 'Actions']"
+            :columns="['Invoice number', 'Customer', 'Date', 'Currency', 'Invoice total', 'Received', 'Due', 'Status', 'Actions']"
             :dtColumns="[
                 ['data' => 'invoice_number', 'name' => 'invoices.invoice_number'],
                 ['data' => 'customer_name', 'name' => 'customers.name'],

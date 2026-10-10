@@ -16,7 +16,7 @@ class DashboardTest extends TestCase
     {
         $user = User::factory()->create();
         foreach (['invoices.view', 'customers.view', 'payments.view', 'expenses.view'] as $name) $user->givePermissionTo(Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']));
-        $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertSee('Invoice performance')->assertSee('No overdue balances')->assertSee('Expenses this month');
+        $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertSee('Invoice performance')->assertSee('No overdue dues')->assertSee('Expenses this month');
     }
     public function test_outstanding_uses_active_payments_and_excludes_drafts(): void
     {

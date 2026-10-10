@@ -22,7 +22,7 @@ class StoreInvoiceRequest extends FormRequest
             'new_customer_data.bin_number' => 'BIN', 'new_customer_data.tin_number' => 'TIN',
             'new_customer_data.address' => 'customer address', 'invoice_number' => 'invoice number',
             'invoice_date' => 'invoice date', 'due_date' => 'due date', 'currency_code' => 'currency code',
-            'initial_payment_amount' => 'paid now', 'initial_payment_method' => 'payment method',
+            'initial_payment_amount' => 'received now', 'initial_payment_method' => 'payment method',
             'initial_payment_date' => 'payment date', 'initial_payment_reference' => 'transaction reference',
             'items.*.description' => 'item :position description', 'items.*.quantity' => 'item :position quantity',
             'items.*.rate' => 'item :position rate', 'items.*.unit' => 'item :position unit',
@@ -39,8 +39,8 @@ class StoreInvoiceRequest extends FormRequest
             'invoice_number.unique' => 'This invoice number is already in use.',
             'items.required' => 'Please add at least one invoice item.',
             'items.min' => 'Please add at least one invoice item.',
-            'initial_payment_method.required' => 'Please select a payment method for Paid now.',
-            'initial_payment_date.required' => 'Please enter the payment date for Paid now.',
+            'initial_payment_method.required' => 'Please select a payment method for Received now.',
+            'initial_payment_date.required' => 'Please enter the payment date for Received now.',
         ];
     }
 

@@ -71,7 +71,7 @@
                 <x-form-input label="Tax rate (%)" name="tax_rate" type="number" :value="old('tax_rate', 0)" min="0" max="999.9999" step="0.0001" required />
             <input type="hidden" name="save_mode" id="invoice-save-mode" value="{{ auth()->user()->can('invoices.issue') ? 'issue' : 'draft' }}">
             @if(auth()->user()->can('payments.create') && auth()->user()->can('invoices.issue'))
-                <x-form-input label="Paid now" name="initial_payment_amount" id="paid-now" type="number" :value="old('initial_payment_amount', '0')" min="0" step="0.01" />
+                <x-form-input label="Received now" name="initial_payment_amount" id="paid-now" type="number" :value="old('initial_payment_amount', '0')" min="0" step="0.01" />
                 <div id="initial-payment-details" class="space-y-3" hidden>
                     <x-form-select label="Payment method" name="initial_payment_method" :searchable="false" :placeholder="null">
                         @foreach(['cash', 'bank', 'bkash', 'nagad', 'rocket', 'cheque', 'card', 'other'] as $method)<option value="{{ $method }}" @selected(old('initial_payment_method', 'cash') === $method)>{{ ucfirst($method) }}</option>@endforeach
@@ -86,8 +86,8 @@
                 @foreach(['subtotal' => 'Subtotal', 'discount' => 'Discount', 'tax' => 'Tax'] as $key => $label)
                     <div><dt>{{ $label }}</dt><dd data-total="{{ $key }}">0.00</dd></div>
                 @endforeach
-                <div class="invoice-grand-total"><dt>Total <span id="summary-currency">BDT</span></dt><dd data-total="total">0.00</dd></div>
-                <div><dt>Paid now</dt><dd data-total="paid">0.00</dd></div>
+                <div class="invoice-grand-total"><dt>Invoice total <span id="summary-currency">BDT</span></dt><dd data-total="total">0.00</dd></div>
+                <div><dt>Received now</dt><dd data-total="paid">0.00</dd></div>
                 <div class="font-semibold"><dt>Due</dt><dd data-total="due">0.00</dd></div>
             </dl>
             <details class="text-xs text-gray-500"><summary class="cursor-pointer">Internal cost & profit</summary><dl class="invoice-total-list mt-2"><div><dt>Service cost</dt><dd data-total="cost">0.00</dd></div><div><dt>Profit (excluding tax)</dt><dd data-total="profit">0.00</dd></div></dl></details>
@@ -213,7 +213,7 @@
             const paid = number(paidInput);
             totals.paid = paid;
             totals.due = Math.max(0, round(totals.total - paid));
-            paidInput.setCustomValidity(paid > totals.total ? 'Paid now cannot exceed the total bill.' : '');
+            paidInput.setCustomValidity(paid > totals.total ? 'Received now cannot exceed the total bill.' : '');
             const paymentDetails = document.getElementById('initial-payment-details');
             if (paymentDetails) {
                 paymentDetails.hidden = paid <= 0;

@@ -39,7 +39,7 @@ class InvoiceInitialPaymentTest extends TestCase
     public function test_partial_payment_creates_linked_record_and_due_uses_recalculated_total(): void
     {
         $this->signIn();
-        $this->get(route('invoices.create'))->assertOk()->assertSee('Paid now')->assertSee('Due')->assertSee('Save invoice')->assertSee('Save draft invoice');
+        $this->get(route('invoices.create'))->assertOk()->assertSee('Received now')->assertSee('Due')->assertSee('Save invoice')->assertSee('Save draft invoice');
         $this->post(route('invoices.store'), $this->payload('50'))->assertSessionHasNoErrors();
         $invoice = Invoice::firstOrFail();
         $payment = Payment::firstOrFail();

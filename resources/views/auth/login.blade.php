@@ -14,7 +14,7 @@
                     <div class="mt-24 max-w-sm">
                         <p class="text-blue-300 text-sm font-semibold uppercase tracking-[0.2em]">Invoice management made simple</p>
                         <h2 class="mt-5 text-4xl font-bold leading-tight">Create, print and track every invoice with confidence.</h2>
-                        <p class="mt-6 text-slate-300 leading-relaxed">Manage professional bills, customer payments and outstanding balances from one secure workspace.</p>
+                        <p class="mt-6 text-slate-300 leading-relaxed">Manage professional bills, customer payments and customer dues from one secure workspace.</p>
                     </div>
                 </div>
                 <div class="relative z-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-6 text-sm">

@@ -3,7 +3,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold text-gray-800">Customer Details</h2>
-                <p class="mt-1 text-sm text-gray-500">View customer profile and opening balance.</p>
+                <p class="mt-1 text-sm text-gray-500">View customer profile and opening receivable.</p>
             </div>
             <a href="{{ route('customers.index') }}" class="btn-primary inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white">
                 Back to Customers
@@ -35,7 +35,7 @@
                     <p class="mt-1 text-gray-900">{{ $customer->email ?: '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Opening Balance</p>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Opening receivable</p>
                     <p class="mt-1 text-gray-900">{{ number_format((float) $customer->opening_balance, 2) }}</p>
                 </div>
                 <div class="md:col-span-2">
