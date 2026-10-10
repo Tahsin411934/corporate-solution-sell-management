@@ -15,6 +15,12 @@ class InvoiceService
     public function create(array $data, int $userId): Invoice
     {
         return DB::transaction(function () use ($data, $userId) {
+            if (!empty($data['new_customer'])) {
+                $customer = app(\Modules\Customer\Services\CustomerService::class)->create(
+                    Arr::only($data['new_customer_data'], ['name', 'bin_number', 'tin_number', 'address']), $userId
+                );
+                $data['customer_id'] = $customer->id;
+            }
             $invoice = Invoice::create(Arr::only($data, [
                 'customer_id', 'referral_source', 'invoice_number', 'invoice_date',
                 'due_date', 'currency_code', 'discount_type', 'discount_value',

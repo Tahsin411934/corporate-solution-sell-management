@@ -22,6 +22,8 @@
                 <strong>{{ $invoice->customer?->name ?? 'Unavailable customer' }}</strong>
                 @if($invoice->customer?->company_name)<p>{{ $invoice->customer->company_name }}</p>@endif
                 <p>{{ $invoice->customer?->address }}</p>
+                @if($invoice->customer?->bin_number)<p class="invoice-small">BIN: {{ $invoice->customer->bin_number }}</p>@endif
+                @if($invoice->customer?->tin_number)<p class="invoice-small">TIN: {{ $invoice->customer->tin_number }}</p>@endif
             </div></section>
             <section class="invoice-panel bill-details"><h3>BILL DETAILS</h3><div class="panel-body">
                 <p><strong>Date :</strong> {{ $invoice->invoice_date->format('d F Y') }}</p>

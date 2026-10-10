@@ -9,14 +9,20 @@ class StoreInvoiceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('invoices.create') ?? false;
+        return ($this->user()?->can('invoices.create') ?? false)
+            && (!$this->boolean('new_customer') || $this->user()->can('customers.create'));
     }
 
     public function rules(): array
     {
         $money = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999.99'];
         return [
-            'customer_id' => ['required', Rule::exists('customers', 'id')->whereNull('deleted_at')],
+            'new_customer' => ['sometimes', 'boolean'],
+            'customer_id' => ['exclude_if:new_customer,1', 'required', Rule::exists('customers', 'id')->whereNull('deleted_at')],
+            'new_customer_data.name' => ['exclude_unless:new_customer,1', 'required', 'string', 'max:200'],
+            'new_customer_data.bin_number' => ['exclude_unless:new_customer,1', 'nullable', 'string', 'max:80'],
+            'new_customer_data.tin_number' => ['exclude_unless:new_customer,1', 'nullable', 'string', 'max:80'],
+            'new_customer_data.address' => ['exclude_unless:new_customer,1', 'nullable', 'string', 'max:2000'],
             'referral_source' => ['nullable', 'string', 'max:200'],
             'invoice_number' => ['required', 'string', 'max:100', Rule::unique('invoices', 'invoice_number')],
             'invoice_date' => ['required', 'date_format:Y-m-d'],

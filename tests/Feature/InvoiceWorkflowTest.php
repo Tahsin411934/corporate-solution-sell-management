@@ -129,7 +129,7 @@ class InvoiceWorkflowTest extends TestCase
         $user = $this->userWithPermissions();
         $this->actingAs($user)->postJson(route('customers.store'), ['customer_code' => 'QUICK-1', 'name' => 'Quick customer'])->assertForbidden();
         $user->givePermissionTo(Permission::firstOrCreate(['name' => 'customers.create', 'guard_name' => 'web']));
-        $this->get(route('invoices.create'))->assertOk()->assertSee('quick-customer-open', false)->assertSee('quick-customer-drawer', false)->assertDontSee('<dialog', false);
+        $this->get(route('invoices.create'))->assertOk()->assertSee('new-customer-toggle', false)->assertSee('new-customer-details', false)->assertDontSee('quick-customer-drawer', false);
         $this->postJson(route('customers.store'), ['customer_code' => 'QUICK-1', 'name' => 'Quick customer'])->assertCreated()
             ->assertJsonPath('data.name', 'Quick customer')->assertJsonPath('data.customer_code', 'CS-00001')->assertJsonStructure(['data' => ['id']]);
         $this->postJson(route('customers.store'), ['name' => ''])->assertUnprocessable()->assertJsonValidationErrors('name');

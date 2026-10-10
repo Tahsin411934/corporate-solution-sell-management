@@ -15,15 +15,28 @@
             <section class="bg-white rounded-xl border p-5">
                 <h2 class="font-semibold text-gray-800 mb-4">1. Customer & invoice details</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-form-select label="Customer" name="customer_id" required>
-                    <x-slot name="labelAction">
-                        @can('customers.create')<button type="button" id="quick-customer-open" class="text-primary text-xs font-semibold border border-primary rounded px-2 py-1" aria-haspopup="dialog">+ Add</button>@endcan
-                    </x-slot>
-                    @foreach($customers as $customer)<option value="{{ $customer->id }}" @selected(old('customer_id') == $customer->id)>{{ $customer->name }}</option>@endforeach
-                </x-form-select>
-                @if($customers->isEmpty())<p id="customer-empty-hint" class="text-sm text-amber-700">Add a customer to start your invoice.</p>@endif
-                <x-form-input label="Referral source" name="referral_source" :value="old('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
                 <x-form-input label="Invoice number" name="invoice_number" :value="old('invoice_number', $invoiceNumber)" maxlength="100" required />
+                <div class="flex items-center pt-6">
+                    <label for="new-customer-toggle" class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input id="new-customer-toggle" name="new_customer" type="checkbox" value="1" @checked(old('new_customer')) @disabled(!auth()->user()->can('customers.create')) class="rounded border-gray-300 text-primary focus:ring-primary">
+                        New customer
+                    </label>
+                </div>
+                <div id="existing-customer-fields">
+                    <x-form-select label="Customer" name="customer_id" required>
+                        @foreach($customers as $customer)<option value="{{ $customer->id }}" @selected(old('customer_id') == $customer->id)>{{ $customer->name }}</option>@endforeach
+                    </x-form-select>
+                    @if($customers->isEmpty())<p class="text-sm text-amber-700">Select New customer to enter customer details.</p>@endif
+                </div>
+                <div id="new-customer-name-field" hidden>
+                    <x-form-input label="Customer name" name="new_customer_data[name]" id="new-customer-name" :value="old('new_customer_data.name')" maxlength="200" />
+                </div>
+                <div id="new-customer-details" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" hidden>
+                    <x-form-input label="BIN" name="new_customer_data[bin_number]" :value="old('new_customer_data.bin_number')" maxlength="80" />
+                    <x-form-input label="TIN" name="new_customer_data[tin_number]" :value="old('new_customer_data.tin_number')" maxlength="80" />
+                    <div class="md:col-span-2"><x-form-textarea label="Address" name="new_customer_data[address]" :value="old('new_customer_data.address', '')" maxlength="2000" /></div>
+                </div>
+                <x-form-input label="Referral source" name="referral_source" :value="old('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
                 <x-form-input label="Invoice date" name="invoice_date" type="date" :value="old('invoice_date', now()->toDateString())" required />
                 <x-form-input label="Due date" name="due_date" type="date" :value="old('due_date')" />
                 <x-form-input label="Currency code" name="currency_code" :value="old('currency_code', 'BDT')" pattern="[A-Z]{3}" maxlength="3" required />
@@ -58,28 +71,13 @@
             </dl>
             <details class="text-xs text-gray-500"><summary class="cursor-pointer">Internal cost & profit</summary><dl class="invoice-total-list mt-2"><div><dt>Service cost</dt><dd data-total="cost">0.00</dd></div><div><dt>Profit (excluding tax)</dt><dd data-total="profit">0.00</dd></div></dl></details>
             <p class="text-xs text-gray-500">Preview only. Final amounts are recalculated on save. Saving a draft does not issue the invoice.</p>
-            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50" @disabled($customers->isEmpty())><i class="fas fa-check mr-2" aria-hidden="true"></i><span>Save draft invoice</span></button>
+            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50"><i class="fas fa-check mr-2" aria-hidden="true"></i><span>Save draft invoice</span></button>
             <p id="save-status" role="status" class="text-xs text-gray-500"></p>
             </div>
             </aside>
             </div>
         </form>
     </div>
-    @can('customers.create')
-        <x-drawer id="quick-customer-drawer" overlayId="quick-customer-overlay" title="Add customer" submitBtnId="quick-customer-save" submitBtnText="Save & select customer" submitOnClick="document.getElementById('quick-customer-form').requestSubmit()">
-            <form id="quick-customer-form" class="space-y-4">
-                @csrf
-                <p class="text-xs text-gray-500">Save and select this customer without leaving your invoice.</p>
-                <div id="quick-customer-errors" role="alert" class="hidden text-sm text-red-700 bg-red-50 p-3 rounded"></div>
-                <x-form-input label="Customer code" name="customer_code" id="quick-customer-code" readonly placeholder="Assigned automatically" />
-                <p class="text-xs text-gray-500">Next serial preview. Final code is assigned when saved.</p>
-                <x-form-input label="Customer name" name="name" id="quick-customer-name" required maxlength="200" />
-                <x-form-input label="Company name" name="company_name" id="quick-customer-company" maxlength="200" />
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><x-form-input label="Phone" name="phone" id="quick-customer-phone" maxlength="30" /><x-form-input label="Email" name="email" id="quick-customer-email" type="email" maxlength="190" /></div>
-                <x-form-textarea label="Address" name="address" id="quick-customer-address" maxlength="2000" />
-            </form>
-        </x-drawer>
-    @endcan
     <template id="invoice-item-template">
         <div class="invoice-item border rounded-lg p-4 space-y-3 bg-gray-50/50">
             <div class="flex justify-between items-center"><span class="item-number text-xs font-semibold text-gray-500">Item 1</span><div class="flex gap-3"><button type="button" class="duplicate-item text-xs text-primary">Duplicate</button><button type="button" class="remove-item text-xs text-red-600 disabled:opacity-30">Remove</button></div></div>
@@ -99,6 +97,7 @@
         </div>
     </template>
     <style>
+        .invoice-builder [hidden] {display:none!important;}
         .invoice-workspace {display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start;}
         .invoice-summary {position:sticky;top:20px;}
         .invoice-total-list > div {display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:13px;color:#64748b;}
@@ -118,54 +117,26 @@
         const initial = {{ Illuminate\Support\Js::from($initialItems) }};
         const form = document.getElementById('invoice-create');
         const container = document.getElementById('invoice-items');
-        const customerDialog = document.getElementById('quick-customer-drawer');
-        if (customerDialog) {
-            const customerForm = document.getElementById('quick-customer-form');
-            const saveCustomer = document.getElementById('quick-customer-save');
-            const errors = document.getElementById('quick-customer-errors');
-            document.getElementById('quick-customer-open').addEventListener('click', async () => {
-                openGlobalDrawer('quick-customer-drawer', 'quick-customer-overlay');
-                try {
-                    const response = await fetch(@json(route('customers.next-code')), {headers: {Accept: 'application/json'}, cache: 'no-store'});
-                    if (!response.ok) throw new Error();
-                    document.getElementById('quick-customer-code').value = (await response.json()).customer_code;
-                } catch { document.getElementById('quick-customer-code').value = ''; }
-                document.getElementById('quick-customer-name').focus();
-            });
-            customerForm.addEventListener('submit', async event => {
-                event.preventDefault();
-                if (saveCustomer.disabled) return;
-                saveCustomer.disabled = true;
-                const saveLabel = saveCustomer.querySelector('span');
-                saveLabel.textContent = 'Saving…';
-                errors.textContent = ''; errors.classList.add('hidden');
-                try {
-                    const response = await fetch(@json(route('customers.store')), {
-                        method: 'POST', credentials: 'same-origin', body: new FormData(customerForm),
-                        headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
-                    });
-                    const result = await response.json();
-                    if (!response.ok) {
-                        errors.textContent = result.errors ? Object.values(result.errors).flat().join(' ') : (result.message || 'Unable to save customer.');
-                        errors.classList.remove('hidden');
-                        return;
-                    }
-                    const select = form.elements.customer_id;
-                    select.add(new Option(result.data.name, result.data.id, true, true));
-                    $(select).trigger('change');
-                    document.getElementById('save-invoice').disabled = false;
-                    document.getElementById('customer-empty-hint')?.remove();
-                    document.getElementById('save-status').textContent = 'Customer added and selected.';
-                    customerForm.reset(); closeGlobalDrawer('quick-customer-drawer', 'quick-customer-overlay');
-                } catch {
-                    errors.textContent = 'Unable to confirm the save. Check your connection and retry with the same customer code.';
-                    errors.classList.remove('hidden');
-                } finally {
-                    saveCustomer.disabled = false;
-                    saveLabel.textContent = 'Save & select customer';
-                }
-            });
+        const newCustomer = document.getElementById('new-customer-toggle');
+        function syncCustomerMode() {
+            const creating = newCustomer.checked;
+            const existing = document.getElementById('existing-customer-fields');
+            existing.hidden = creating;
+            form.elements.customer_id.disabled = creating;
+            form.elements.customer_id.required = !creating;
+            for (const id of ['new-customer-name-field', 'new-customer-details']) {
+                const group = document.getElementById(id);
+                group.hidden = !creating;
+                group.querySelectorAll('input, textarea').forEach(input => input.disabled = !creating);
+            }
+            document.getElementById('new-customer-name').required = creating;
+            document.getElementById('save-invoice').disabled = !creating && ![...form.elements.customer_id.options].some(option => option.value);
         }
+        newCustomer.addEventListener('change', () => {
+            syncCustomerMode();
+            if (newCustomer.checked) document.getElementById('new-customer-name').focus();
+        });
+        syncCustomerMode();
         const round = value => Math.round((value + Number.EPSILON) * 100) / 100;
         const number = input => Number(input.value) || 0;
         function calculate() {
@@ -244,7 +215,7 @@
         });
         window.addEventListener('pageshow', () => {
             const button = document.getElementById('save-invoice');
-            button.disabled = form.elements.customer_id.options.length <= 1;
+            syncCustomerMode();
             button.querySelector('span').textContent = 'Save draft invoice';
             document.getElementById('save-status').textContent = '';
         });
