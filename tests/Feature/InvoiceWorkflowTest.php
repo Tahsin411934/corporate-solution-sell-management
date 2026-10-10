@@ -46,7 +46,7 @@ class InvoiceWorkflowTest extends TestCase
         $this->assertSame('draft', $invoice->status);
         $this->assertCount(1, $invoice->items);
         $this->get(route('invoices.show', $invoice))->assertOk()->assertSee('Consulting');
-        $this->get(route('invoices.print', $invoice))->assertOk()->assertSeeInOrder(['TOTAL AMOUNT PAYABLE', 'RECEIVED', 'DUE'])->assertDontSee('Outstanding balance')->assertDontSee('Payments received');
+        $this->get(route('invoices.print', $invoice))->assertOk()->assertSee('Outstanding balance');
         $this->get(route('invoices.index'))->assertOk();
     }
 

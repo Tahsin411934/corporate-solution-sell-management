@@ -47,8 +47,6 @@
                     @if(bccomp((string) $invoice->tax_amount, '0', 2) !== 0)<tr class="adjustment"><td colspan="2">Tax ({{ $money($invoice->tax_rate) }}%)</td><td class="money">{{ $money($invoice->tax_amount) }}</td></tr>@endif
                 @endif
                 <tr class="invoice-total"><td colspan="2">TOTAL AMOUNT PAYABLE</td><td class="money">{{ $money($invoice->total_amount) }}</td></tr>
-                <tr class="adjustment"><td colspan="2">RECEIVED</td><td class="money">{{ $money($received) }}</td></tr>
-                <tr class="invoice-total"><td colspan="2">{{ $invoice->status === 'cancelled' ? 'HISTORICAL UNPAID AMOUNT (CANCELLED)' : 'DUE' }}</td><td class="money">{{ $money($balance) }}</td></tr>
             </tbody>
         </table>
         <div class="invoice-payment-request">
@@ -67,6 +65,14 @@
                     @if(!empty($bank['branch_name']))<p>{{ $bank['branch_name'] }}</p>@endif
                 </div></div>@endforeach
             </div></section>
+        @endif
+        @if($invoice->payments->isNotEmpty())
+            <section class="invoice-receipts"><strong>Payments received</strong>
+                @foreach($invoice->payments as $payment)<p>{{ $payment->payment_date->format('d M Y') }} · {{ $payment->receipt_number ?: '—' }} · {{ $money($payment->amount) }} {{ $invoice->currency_code }}</p>@endforeach
+                <p><strong>Received:</strong> {{ $money($received) }} · <strong>{{ $invoice->status === 'cancelled' ? 'Historical unpaid amount (cancelled)' : 'Outstanding balance' }}:</strong> {{ $money($balance) }}</p>
+            </section>
+        @else
+            <p class="invoice-balance"><strong>{{ $invoice->status === 'cancelled' ? 'Historical unpaid amount (cancelled)' : 'Outstanding balance' }}:</strong> {{ $money($balance) }} {{ $invoice->currency_code }}</p>
         @endif
         @if($invoice->notes)<section class="invoice-notes"><strong>Notes:</strong> <p>{{ $invoice->notes }}</p></section>@endif
         <div class="invoice-signoff"><p>Sincerely yours,</p><div class="signature-space"></div>
