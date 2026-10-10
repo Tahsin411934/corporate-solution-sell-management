@@ -63,6 +63,8 @@ class InvoiceNewCustomerTest extends TestCase
         $payload = $this->payload();
         $payload['new_customer_data']['name'] = '';
         $this->post(route('invoices.store'), $payload)->assertSessionHasErrors('new_customer_data.name');
+        $this->postJson(route('invoices.store'), $payload)->assertUnprocessable()
+            ->assertJsonValidationErrors('new_customer_data.name')->assertSee('Please enter the customer name.');
         $this->assertDatabaseCount('customers', 0);
     }
 

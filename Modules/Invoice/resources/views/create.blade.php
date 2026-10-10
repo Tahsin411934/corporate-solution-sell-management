@@ -6,9 +6,11 @@
         </div>
         @if(session('success'))<div role="status" class="p-4 rounded-lg bg-green-50 text-green-800">{{ session('success') }}</div>@endif
         @if($errors->any())
-            <div role="alert" class="p-4 rounded-lg bg-red-50 text-red-800"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+            <div id="invoice-errors" role="alert" tabindex="-1" class="p-4 rounded-lg bg-red-50 text-red-800"><strong>Please correct the following:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+        @else
+            <div id="invoice-errors" role="alert" tabindex="-1" class="p-4 rounded-lg bg-red-50 text-red-800" hidden></div>
         @endif
-        <form action="{{ route('invoices.store') }}" method="POST" id="invoice-create">
+        <form action="{{ route('invoices.store') }}" method="POST" id="invoice-create" novalidate>
             @csrf
             <div class="invoice-workspace">
             <div class="space-y-5 min-w-0">
@@ -136,6 +138,37 @@
         const services = {{ Illuminate\Support\Js::from($serviceData) }};
         const initial = {{ Illuminate\Support\Js::from($initialItems) }};
         const form = document.getElementById('invoice-create');
+        const serverErrors = {{ Illuminate\Support\Js::from($errors->getMessages()) }};
+        function showFieldError(input, message) {
+            const errorId = input.id + '-error';
+            let error = document.getElementById(errorId);
+            if (!error) {
+                error = document.createElement('p');
+                error.id = errorId;
+                error.className = 'invoice-field-error text-sm text-red-600 mt-1';
+                input.parentElement.appendChild(error);
+            }
+            error.textContent = message;
+            input.setAttribute('aria-invalid', 'true');
+            input.setAttribute('aria-describedby', errorId);
+        }
+        function clearFieldError(input) {
+            document.getElementById(input.id + '-error')?.remove();
+            input.removeAttribute('aria-invalid');
+            input.removeAttribute('aria-describedby');
+        }
+        function focusFirstError() {
+            const input = [...form.querySelectorAll('[aria-invalid="true"]')].find(input => !input.disabled);
+            const target = input || document.getElementById('invoice-errors');
+            target.scrollIntoView({behavior: 'smooth', block: 'center'});
+            target.focus({preventScroll: true});
+        }
+        form.addEventListener('invalid', event => {
+            event.preventDefault();
+            showFieldError(event.target, event.target.validationMessage);
+        }, true);
+        form.addEventListener('input', event => clearFieldError(event.target));
+        form.addEventListener('change', event => clearFieldError(event.target));
         const container = document.getElementById('invoice-items');
         const newCustomer = document.getElementById('new-customer-toggle');
         function syncCustomerMode() {
@@ -243,8 +276,21 @@
         const syncDates = () => { dueDate.min = invoiceDate.value; };
         invoiceDate.addEventListener('change', syncDates);
         syncDates();
+        for (const input of form.querySelectorAll('input, select, textarea')) {
+            const key = input.name.replace(/\[([^\]]+)\]/g, '.$1');
+            if (serverErrors[key]) showFieldError(input, serverErrors[key].join(' '));
+        }
+        if (Object.keys(serverErrors).length) requestAnimationFrame(focusFirstError);
         const defaultMode = document.getElementById('invoice-save-mode').value;
         form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                const summary = document.getElementById('invoice-errors');
+                summary.hidden = false;
+                summary.textContent = 'Please correct the highlighted fields before saving the invoice.';
+                focusFirstError();
+                return;
+            }
             document.getElementById('invoice-save-mode').value = event.submitter?.dataset.mode || defaultMode;
             const button = document.getElementById('save-invoice');
             button.disabled = true;

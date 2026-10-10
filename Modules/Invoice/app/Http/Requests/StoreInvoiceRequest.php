@@ -15,6 +15,35 @@ class StoreInvoiceRequest extends FormRequest
             && ((float) $this->input('initial_payment_amount', 0) <= 0 || ($this->user()->can('payments.create') && $this->user()->can('invoices.issue')));
     }
 
+    public function attributes(): array
+    {
+        return [
+            'customer_id' => 'customer', 'new_customer_data.name' => 'customer name',
+            'new_customer_data.bin_number' => 'BIN', 'new_customer_data.tin_number' => 'TIN',
+            'new_customer_data.address' => 'customer address', 'invoice_number' => 'invoice number',
+            'invoice_date' => 'invoice date', 'due_date' => 'due date', 'currency_code' => 'currency code',
+            'initial_payment_amount' => 'paid now', 'initial_payment_method' => 'payment method',
+            'initial_payment_date' => 'payment date', 'initial_payment_reference' => 'transaction reference',
+            'items.*.description' => 'item :position description', 'items.*.quantity' => 'item :position quantity',
+            'items.*.rate' => 'item :position rate', 'items.*.unit' => 'item :position unit',
+            'items.*.unit_cost' => 'item :position unit cost', 'items.*.service_id' => 'item :position service',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'customer_id.required' => 'Please select a customer or choose New customer.',
+            'customer_id.exists' => 'The selected customer is no longer available. Please select another customer.',
+            'new_customer_data.name.required' => 'Please enter the customer name.',
+            'invoice_number.unique' => 'This invoice number is already in use.',
+            'items.required' => 'Please add at least one invoice item.',
+            'items.min' => 'Please add at least one invoice item.',
+            'initial_payment_method.required' => 'Please select a payment method for Paid now.',
+            'initial_payment_date.required' => 'Please enter the payment date for Paid now.',
+        ];
+    }
+
     public function rules(): array
     {
         $money = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999.99'];
