@@ -185,7 +185,7 @@
                 scrollCollapse: true,
                 // Keep every column reachable through horizontal scrolling.
                 responsive: false,
-                order: @json($order) || [[idIndex, 'asc']],
+                order: @json($order) || [[idIndex, 'desc']],
                 language: {
                     search: "",
                     searchPlaceholder: "Search records...",
