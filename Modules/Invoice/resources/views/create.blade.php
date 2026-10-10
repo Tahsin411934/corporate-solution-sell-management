@@ -15,7 +15,11 @@
             <section class="bg-white rounded-xl border p-5">
                 <h2 class="font-semibold text-gray-800 mb-4">1. Customer & invoice details</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-form-input label="Invoice number" name="invoice_number" :value="old('invoice_number', $invoiceNumber)" maxlength="100" required />
+                <div>
+                    <input type="hidden" name="auto_invoice_number" value="1">
+                    <x-form-input label="Invoice number" name="invoice_number" :value="$invoiceNumber" readonly />
+                    <p class="mt-1 text-xs text-gray-500">Preview. Final serial is assigned when saved, using the invoice date.</p>
+                </div>
                 <div class="flex items-center pt-6">
                     <label for="new-customer-toggle" class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
                         <input id="new-customer-toggle" name="new_customer" type="checkbox" value="1" @checked(old('new_customer')) @disabled(!auth()->user()->can('customers.create')) class="rounded border-gray-300 text-primary focus:ring-primary">

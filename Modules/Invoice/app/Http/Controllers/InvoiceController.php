@@ -4,7 +4,6 @@ namespace Modules\Invoice\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Modules\Customer\Models\Customer;
 use Modules\Invoice\Http\Requests\StoreInvoiceRequest;
@@ -45,7 +44,7 @@ class InvoiceController extends Controller
         return view('invoice::create', [
             'customers' => Customer::orderBy('name')->get(['id', 'name']),
             'services' => Service::where('is_active', true)->orderBy('name')->get(['id', 'name', 'description', 'default_rate', 'default_cost']),
-            'invoiceNumber' => 'INV-'.now()->format('Ymd').'-'.Str::upper((string) Str::ulid()),
+            'invoiceNumber' => app(\Modules\Invoice\Services\InvoiceNumberService::class)->preview(today()->toDateString()),
         ]);
     }
 

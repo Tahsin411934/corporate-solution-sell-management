@@ -15,6 +15,9 @@ class InvoiceService
     public function create(array $data, int $userId): Invoice
     {
         return DB::transaction(function () use ($data, $userId) {
+            if (!empty($data['auto_invoice_number'])) {
+                $data['invoice_number'] = app(InvoiceNumberService::class)->next($data['invoice_date']);
+            }
             if (!empty($data['new_customer'])) {
                 $customer = app(\Modules\Customer\Services\CustomerService::class)->create(
                     Arr::only($data['new_customer_data'], ['name', 'bin_number', 'tin_number', 'address']), $userId
@@ -32,7 +35,7 @@ class InvoiceService
                 ]) + ['sort_order' => $index + 1]);
             }
             return $invoice->fresh('items');
-        });
+        }, 5);
     }
 
     public function issue(Invoice $invoice): Invoice
