@@ -3,5 +3,6 @@
 @include('invoice::partials.styles')
 </head><body>
     <div class="no-print" style="padding:16px;text-align:center"><button type="button" onclick="window.print()">Print / Save as PDF</button></div>
-    @include('invoice::partials.document')
+    <div class="invoice-preview">@include('invoice::partials.document')</div>
+    @include('invoice::partials.print-fit')
 </body></html>

@@ -10,7 +10,7 @@
         </div>
         @if(session('success'))<p role="status" class="p-3 bg-green-50 text-green-800">{{ session('success') }}</p>@endif
         @if($errors->any())<div role="alert" class="p-3 bg-red-50 text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-        @include('invoice::partials.document')
+        <div class="invoice-preview">@include('invoice::partials.document')</div>
         @if($invoice->status !== 'cancelled' && $invoice->payments->isEmpty())
             @can('invoices.cancel')
                 <form action="{{ route('invoices.cancel', $invoice) }}" method="POST" class="bg-white border rounded-xl p-5 space-y-3" onsubmit="return confirm('Cancel this invoice? This cannot be undone.');">

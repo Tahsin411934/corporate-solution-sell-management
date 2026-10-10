@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="794" height="1123" viewBox="0 0 794 1123" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b4f3fb"/><stop offset=".55" stop-color="#14a9e4"/><stop offset="1" stop-color="#087fc6"/></linearGradient>
+    <linearGradient id="light"><stop stop-color="#16b8eb"/><stop offset="1" stop-color="#bdf8fb"/></linearGradient>
+    <pattern id="lines" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 1H6M0 4H6" stroke="#fff" stroke-opacity=".35" stroke-width=".5"/></pattern>
+  </defs>
+  <path d="M392 0H794V224C765 125 692 72 590 48C507 29 447 43 392 0Z" fill="url(#light)"/>
+  <path d="M516 0H794V170C740 95 655 84 599 50C565 29 537 11 516 0Z" fill="url(#blue)" opacity=".8"/>
+  <path d="M578 0H794V110C728 66 671 65 628 39C603 23 589 8 578 0Z" fill="#00a0dc" opacity=".5"/>
+  <path d="M456 0H794V208C739 107 657 78 584 56C532 40 490 27 456 0Z" fill="url(#lines)"/>
+  <g transform="translate(794 1123) rotate(180)">
+    <path d="M326 0H794V244C768 147 704 95 605 61C494 23 399 48 326 0Z" fill="url(#light)"/>
+    <path d="M446 0H794V170C741 107 661 96 603 55C544 15 483 18 446 0Z" fill="url(#blue)" opacity=".85"/>
+    <path d="M529 0H794V111C725 71 671 65 621 37C586 16 551 12 529 0Z" fill="#05a6de" opacity=".55"/>
+    <path d="M371 0H794V215C726 112 665 90 589 61C498 25 419 33 371 0Z" fill="url(#lines)"/>
+  </g>
+</svg>
