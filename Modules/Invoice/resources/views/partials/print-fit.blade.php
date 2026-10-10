@@ -18,6 +18,10 @@
         window.addEventListener('beforeprint', fitInvoice);
         const ready = document.fonts ? document.fonts.ready : Promise.resolve();
         ready.then(() => Promise.all([...document.images].map(image => image.decode().catch(() => {}))))
-            .then(fitInvoice);
+            .then(() => {
+                fitInvoice();
+                // Wait until the fitted document has been painted before opening print.
+                requestAnimationFrame(() => window.print());
+            });
     })();
 </script>
