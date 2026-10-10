@@ -59,6 +59,6 @@ class InvoiceController extends Controller
             throw ValidationException::withMessages(['invoice_number' => 'This invoice number is already in use.']);
         }
         return redirect()->route($request->user()->can('invoices.view') ? 'invoices.show' : 'invoices.create', $request->user()->can('invoices.view') ? $invoice : [])
-            ->with('success', 'Draft invoice '.$invoice->invoice_number.' saved successfully.');
+            ->with('success', ($invoice->status === 'draft' ? 'Draft invoice ' : 'Invoice ').$invoice->invoice_number.' saved successfully.');
     }
 }

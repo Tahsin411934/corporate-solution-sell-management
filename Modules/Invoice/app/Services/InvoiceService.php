@@ -34,7 +34,26 @@ class InvoiceService
                     'service_id', 'description', 'quantity', 'unit', 'rate', 'unit_cost',
                 ]) + ['sort_order' => $index + 1]);
             }
-            return $invoice->fresh('items');
+            $invoice = $invoice->fresh('items');
+            $paid = bcadd((string) ($data['initial_payment_amount'] ?? '0'), '0', 2);
+            if (bccomp($paid, $invoice->total_amount, 2) > 0) {
+                throw ValidationException::withMessages(['initial_payment_amount' => 'Paid now cannot exceed the total bill.']);
+            }
+            if (($data['save_mode'] ?? 'draft') === 'draft' && bccomp($paid, '0', 2) > 0) {
+                throw ValidationException::withMessages(['initial_payment_amount' => 'Draft invoices cannot receive payments.']);
+            }
+            if (($data['save_mode'] ?? 'draft') === 'issue') {
+                $invoice = $this->issue($invoice);
+                if (bccomp($paid, '0', 2) > 0) {
+                    app(\Modules\Payment\Services\PaymentService::class)->create([
+                        'invoice_id' => $invoice->id, 'amount' => $paid,
+                        'payment_method' => $data['initial_payment_method'],
+                        'payment_date' => $data['initial_payment_date'],
+                        'transaction_number' => $data['initial_payment_reference'] ?? null,
+                    ], $userId);
+                }
+            }
+            return $invoice->fresh(['items', 'payments']);
         }, 5);
     }
 

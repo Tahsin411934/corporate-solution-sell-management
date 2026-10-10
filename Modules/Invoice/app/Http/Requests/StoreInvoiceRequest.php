@@ -10,13 +10,25 @@ class StoreInvoiceRequest extends FormRequest
     public function authorize(): bool
     {
         return ($this->user()?->can('invoices.create') ?? false)
-            && (!$this->boolean('new_customer') || $this->user()->can('customers.create'));
+            && (!$this->boolean('new_customer') || $this->user()->can('customers.create'))
+            && ($this->input('save_mode', 'draft') !== 'issue' || $this->user()->can('invoices.issue'))
+            && ((float) $this->input('initial_payment_amount', 0) <= 0 || ($this->user()->can('payments.create') && $this->user()->can('invoices.issue')));
     }
 
     public function rules(): array
     {
         $money = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999.99'];
         return [
+            'save_mode' => ['sometimes', Rule::in(['draft', 'issue'])],
+            'initial_payment_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999.99',
+                function ($attribute, $value, $fail) {
+                    if ($this->input('save_mode', 'draft') === 'draft' && (float) $value > 0) {
+                        $fail('Use Save invoice to record a payment. Draft invoices cannot receive payments.');
+                    }
+                }],
+            'initial_payment_method' => [Rule::requiredIf(fn () => (float) $this->input('initial_payment_amount', 0) > 0), 'nullable', Rule::in(['cash', 'bank', 'bkash', 'nagad', 'rocket', 'cheque', 'card', 'other'])],
+            'initial_payment_date' => [Rule::requiredIf(fn () => (float) $this->input('initial_payment_amount', 0) > 0), 'nullable', 'date_format:Y-m-d'],
+            'initial_payment_reference' => ['nullable', 'string', 'max:150'],
             'new_customer' => ['sometimes', 'boolean'],
             'customer_id' => ['exclude_if:new_customer,1', 'required', Rule::exists('customers', 'id')->whereNull('deleted_at')],
             'new_customer_data.name' => ['exclude_unless:new_customer,1', 'required', 'string', 'max:200'],

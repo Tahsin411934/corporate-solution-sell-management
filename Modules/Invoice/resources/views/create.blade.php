@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="invoice-builder max-w-7xl mx-auto p-4 md:p-6 space-y-5">
         <div class="flex flex-wrap justify-between items-center gap-3">
-            <div><p class="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Billing / New invoice</p><h1 class="text-2xl font-semibold text-gray-900">Create invoice</h1><p class="text-sm text-gray-500 mt-1">Choose a customer, add services, then save your draft.</p></div>
+            <div><p class="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Billing / New invoice</p><h1 class="text-2xl font-semibold text-gray-900">Create invoice</h1><p class="text-sm text-gray-500 mt-1">Choose a customer, add services and record any payment received.</p></div>
             @can('invoices.view')<a href="{{ route('invoices.index') }}" class="border rounded-lg px-4 py-2 bg-white text-sm text-gray-600">Back to invoices</a>@endcan
         </div>
         @if(session('success'))<div role="status" class="p-4 rounded-lg bg-green-50 text-green-800">{{ session('success') }}</div>@endif
@@ -67,15 +67,31 @@
                 </x-form-select>
                 <x-form-input label="Discount value" name="discount_value" type="number" :value="old('discount_value', 0)" min="0" step="0.01" required />
                 <x-form-input label="Tax rate (%)" name="tax_rate" type="number" :value="old('tax_rate', 0)" min="0" max="999.9999" step="0.0001" required />
+            <input type="hidden" name="save_mode" id="invoice-save-mode" value="{{ auth()->user()->can('invoices.issue') ? 'issue' : 'draft' }}">
+            @if(auth()->user()->can('payments.create') && auth()->user()->can('invoices.issue'))
+                <x-form-input label="Paid now" name="initial_payment_amount" id="paid-now" type="number" :value="old('initial_payment_amount', '0')" min="0" step="0.01" />
+                <div id="initial-payment-details" class="space-y-3" hidden>
+                    <x-form-select label="Payment method" name="initial_payment_method" :searchable="false" :placeholder="null">
+                        @foreach(['cash', 'bank', 'bkash', 'nagad', 'rocket', 'cheque', 'card', 'other'] as $method)<option value="{{ $method }}" @selected(old('initial_payment_method', 'cash') === $method)>{{ ucfirst($method) }}</option>@endforeach
+                    </x-form-select>
+                    <x-form-input label="Payment date" name="initial_payment_date" type="date" :value="old('initial_payment_date', today()->toDateString())" />
+                    <x-form-input label="Transaction reference (optional)" name="initial_payment_reference" :value="old('initial_payment_reference')" maxlength="150" />
+                </div>
+            @else
+                <input type="hidden" name="initial_payment_amount" value="0">
+            @endif
             <dl class="invoice-total-list border-t pt-4" aria-live="polite" aria-atomic="true">
                 @foreach(['subtotal' => 'Subtotal', 'discount' => 'Discount', 'tax' => 'Tax'] as $key => $label)
                     <div><dt>{{ $label }}</dt><dd data-total="{{ $key }}">0.00</dd></div>
                 @endforeach
                 <div class="invoice-grand-total"><dt>Total <span id="summary-currency">BDT</span></dt><dd data-total="total">0.00</dd></div>
+                <div><dt>Paid now</dt><dd data-total="paid">0.00</dd></div>
+                <div class="font-semibold"><dt>Due</dt><dd data-total="due">0.00</dd></div>
             </dl>
             <details class="text-xs text-gray-500"><summary class="cursor-pointer">Internal cost & profit</summary><dl class="invoice-total-list mt-2"><div><dt>Service cost</dt><dd data-total="cost">0.00</dd></div><div><dt>Profit (excluding tax)</dt><dd data-total="profit">0.00</dd></div></dl></details>
-            <p class="text-xs text-gray-500">Preview only. Final amounts are recalculated on save. Saving a draft does not issue the invoice.</p>
-            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50"><i class="fas fa-check mr-2" aria-hidden="true"></i><span>Save draft invoice</span></button>
+            <p class="text-xs text-gray-500">Final amounts are calculated on save. Save invoice records the payment; Save draft keeps the invoice unissued without a payment.</p>
+            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50"><i class="fas fa-check mr-2" aria-hidden="true"></i><span>{{ auth()->user()->can('invoices.issue') ? 'Save invoice' : 'Save draft invoice' }}</span></button>
+            @can('invoices.issue')<button type="submit" id="save-draft" data-mode="draft" class="w-full border rounded-lg px-5 py-3 text-sm font-semibold disabled:opacity-50">Save draft invoice</button>@endcan
             <p id="save-status" role="status" class="text-xs text-gray-500"></p>
             </div>
             </aside>
@@ -138,6 +154,7 @@
         }
         newCustomer.addEventListener('change', () => {
             syncCustomerMode();
+            calculate();
             if (newCustomer.checked) document.getElementById('new-customer-name').focus();
         });
         syncCustomerMode();
@@ -159,6 +176,21 @@
             const tax = round(net * number(form.elements.tax_rate) / 100);
             const totals = {subtotal, discount, tax, total: round(net + tax), cost, profit: round(net - cost)};
             document.getElementById('summary-currency').textContent = form.elements.currency_code.value.toUpperCase();
+            const paidInput = form.elements.initial_payment_amount;
+            const paid = number(paidInput);
+            totals.paid = paid;
+            totals.due = Math.max(0, round(totals.total - paid));
+            paidInput.setCustomValidity(paid > totals.total ? 'Paid now cannot exceed the total bill.' : '');
+            const paymentDetails = document.getElementById('initial-payment-details');
+            if (paymentDetails) {
+                paymentDetails.hidden = paid <= 0;
+                paymentDetails.querySelectorAll('input, select').forEach(input => {
+                    input.disabled = paid <= 0;
+                    input.required = paid > 0 && input.name !== 'initial_payment_reference';
+                });
+            }
+            const draftButton = document.getElementById('save-draft');
+            if (draftButton) draftButton.disabled = paid > 0 || document.getElementById('save-invoice').disabled;
             for (const [key, value] of Object.entries(totals)) form.querySelector('[data-total="' + key + '"]').textContent = value.toFixed(2);
         }
         function reindex() {
@@ -211,16 +243,20 @@
         const syncDates = () => { dueDate.min = invoiceDate.value; };
         invoiceDate.addEventListener('change', syncDates);
         syncDates();
-        form.addEventListener('submit', () => {
+        const defaultMode = document.getElementById('invoice-save-mode').value;
+        form.addEventListener('submit', event => {
+            document.getElementById('invoice-save-mode').value = event.submitter?.dataset.mode || defaultMode;
             const button = document.getElementById('save-invoice');
             button.disabled = true;
             button.querySelector('span').textContent = 'Saving…';
-            document.getElementById('save-status').textContent = 'Please wait while your draft is saved.';
+            document.getElementById('save-draft')?.setAttribute('disabled', 'disabled');
+            document.getElementById('save-status').textContent = 'Saving invoice…';
         });
         window.addEventListener('pageshow', () => {
             const button = document.getElementById('save-invoice');
             syncCustomerMode();
-            button.querySelector('span').textContent = 'Save draft invoice';
+            button.querySelector('span').textContent = defaultMode === 'issue' ? 'Save invoice' : 'Save draft invoice';
+            calculate();
             document.getElementById('save-status').textContent = '';
         });
     });

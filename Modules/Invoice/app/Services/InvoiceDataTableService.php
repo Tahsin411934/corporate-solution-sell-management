@@ -16,6 +16,7 @@ class InvoiceDataTableService
             ->selectRaw('invoices.total_amount - COALESCE(receipts.received_amount, 0) as balance_amount');
         return DataTables::eloquent($query)
             ->editColumn('invoice_date', fn (Invoice $invoice) => $invoice->invoice_date->format('Y-m-d'))
+            ->editColumn('status', fn (Invoice $invoice) => $invoice->status === 'issued' ? 'Unpaid' : ucfirst($invoice->status))
             ->filterColumn('balance_amount', function ($query, $keyword) {
                 $query->whereRaw('CAST(invoices.total_amount - COALESCE(receipts.received_amount, 0) AS CHAR) LIKE ?', ['%'.$keyword.'%']);
             })
