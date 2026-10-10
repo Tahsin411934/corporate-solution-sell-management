@@ -15,7 +15,11 @@ use Modules\Invoice\Http\Requests\IssueInvoiceRequest;
 use Modules\Invoice\Http\Requests\CancelInvoiceRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Modules\Expense\Http\Requests\StoreExpenseRequest;
+use Modules\Expense\Models\Expense;
+use Modules\Expense\Services\ExpenseService;
 
 class InvoiceController extends Controller
 {
@@ -23,7 +27,26 @@ class InvoiceController extends Controller
     public function data(InvoiceDataTableService $service): JsonResponse { return $service->response(); }
     public function show(Invoice $invoice, InvoiceService $service): View
     {
-        return view('invoice::show', ['invoice' => $service->details($invoice)]);
+        $expenses = Expense::where('invoice_id', $invoice->id)->orderByDesc('expense_date')->orderByDesc('id')->get();
+        $actualExpense = $expenses->reduce(fn ($total, $expense) => bcadd($total, $expense->amount, 2), '0.00');
+        $remainingCost = bcsub($invoice->total_cost, $actualExpense, 2);
+        return view('invoice::show', [
+            'invoice' => $service->details($invoice), 'expenses' => $expenses, 'actualExpense' => $actualExpense,
+            'suggestedExpense' => bccomp($remainingCost, '0', 2) > 0 ? $remainingCost : '',
+        ]);
+    }
+    public function recordExpense(StoreExpenseRequest $request, Invoice $invoice): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $invoice) {
+            $invoice = Invoice::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
+            if (in_array($invoice->status, ['draft', 'cancelled'], true)) {
+                throw ValidationException::withMessages(['invoice' => 'Expenses can only be recorded against an issued invoice.']);
+            }
+            app(ExpenseService::class)->create(
+                array_replace($request->validated(), ['invoice_id' => $invoice->id]), $request->user()->id
+            );
+        });
+        return redirect()->route('invoices.show', $invoice)->with('success', 'Actual expense recorded successfully.');
     }
     public function print(Invoice $invoice, InvoiceService $service): View
     {

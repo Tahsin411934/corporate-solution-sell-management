@@ -18,6 +18,7 @@
             <p><strong>Due:</strong> {{ bcsub($invoice->total_amount, (string) ($invoice->received_amount ?? '0'), 2) }}</p>
         </div>
         <div class="invoice-preview">@include('invoice::partials.document')</div>
+        @include('invoice::partials.expenses')
         @if($invoice->status !== 'cancelled' && $invoice->payments->isEmpty())
             @can('invoices.cancel')
                 <form action="{{ route('invoices.cancel', $invoice) }}" method="POST" class="bg-white border rounded-xl p-5 space-y-3" onsubmit="return confirm('Cancel this invoice? This cannot be undone.');">
