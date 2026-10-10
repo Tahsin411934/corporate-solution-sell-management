@@ -2,7 +2,6 @@
     "CompanySettings": true,
     "Customer": true,
     "Service": true,
-    "ReferralSource": true,
     "Invoice": true,
     "Payment": true,
     "Expense": true,

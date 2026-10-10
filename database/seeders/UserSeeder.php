@@ -26,7 +26,6 @@ class UserSeeder extends Seeder
             'reports.view',
             'invoices.view', 'invoices.create', 'invoices.update', 'invoices.delete',
             'invoices.issue', 'invoices.cancel', 'invoices.print',
-            'referral-sources.view', 'referral-sources.create', 'referral-sources.update', 'referral-sources.delete',
         ] as $permission) {
             $adminRole->givePermissionTo(Permission::firstOrCreate([
                 'name' => $permission,

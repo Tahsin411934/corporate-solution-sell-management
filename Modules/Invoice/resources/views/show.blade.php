@@ -10,6 +10,7 @@
         </div>
         @if(session('success'))<p role="status" class="p-3 bg-green-50 text-green-800">{{ session('success') }}</p>@endif
         @if($errors->any())<div role="alert" class="p-3 bg-red-50 text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
+        <p class="no-print text-sm text-gray-600"><strong>Referral source:</strong> {{ $invoice->referral_source ?: '—' }}</p>
         <div class="invoice-preview">@include('invoice::partials.document')</div>
         @if($invoice->status !== 'cancelled' && $invoice->payments->isEmpty())
             @can('invoices.cancel')

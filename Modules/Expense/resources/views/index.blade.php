@@ -5,7 +5,7 @@
                 ['data' => 'expense_date'], ['data' => 'category'], ['data' => 'description'],
                 ['data' => 'amount'], ['data' => 'payment_method'],
                 ['data' => 'invoice_number', 'name' => 'invoice.invoice_number'],
-                ['data' => 'referral_name', 'name' => 'referralSource.name'],
+                ['data' => 'referral_source', 'name' => 'expenses.referral_source'],
                 ['data' => 'actions', 'orderable' => false, 'searchable' => false],
             ];
         @endphp
@@ -21,9 +21,7 @@
             <x-form-select label="Invoice (optional)" name="invoice_id" id="expense_invoice" placeholder="No invoice">
                 @foreach($invoices as $invoice)<option value="{{ $invoice->id }}">{{ $invoice->invoice_number }}</option>@endforeach
             </x-form-select>
-            <x-form-select label="Referral source (optional)" name="referral_source_id" id="expense_referral" placeholder="No referral">
-                @foreach($referrals as $referral)<option value="{{ $referral->id }}">{{ $referral->name }}</option>@endforeach
-            </x-form-select>
+            <x-form-input label="Referral source (optional)" name="referral_source" id="expense_referral" maxlength="200" placeholder="Type referral source" />
             <x-form-textarea label="Notes" name="notes" id="expense_notes" />
         </x-entity-crud>
     </div>

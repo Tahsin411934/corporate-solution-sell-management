@@ -17,7 +17,7 @@ class StoreInvoiceRequest extends FormRequest
         $money = ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999.99'];
         return [
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereNull('deleted_at')],
-            'referral_source_id' => ['nullable', Rule::exists('referral_sources', 'id')->whereNull('deleted_at')],
+            'referral_source' => ['nullable', 'string', 'max:200'],
             'invoice_number' => ['required', 'string', 'max:100', Rule::unique('invoices', 'invoice_number')],
             'invoice_date' => ['required', 'date_format:Y-m-d'],
             'due_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:invoice_date'],

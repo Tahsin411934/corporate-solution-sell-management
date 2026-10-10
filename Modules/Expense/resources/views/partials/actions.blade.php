@@ -1,5 +1,5 @@
 @php
-    $payload = $entity->only(['id', 'category', 'description', 'amount', 'payment_method', 'invoice_id', 'referral_source_id', 'notes']);
+    $payload = $entity->only(['id', 'category', 'description', 'amount', 'payment_method', 'invoice_id', 'referral_source', 'notes']);
     $payload['expense_date'] = $entity->expense_date->format('Y-m-d');
 @endphp
 <div class="flex justify-center gap-2">

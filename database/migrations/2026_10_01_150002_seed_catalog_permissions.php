@@ -9,7 +9,7 @@ return new class extends Migration {
     public function up(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        foreach (['services', 'referral-sources'] as $module) {
+        foreach (['services'] as $module) {
             foreach (['view', 'create', 'update', 'delete'] as $action) {
                 $permission = Permission::firstOrCreate(['name' => $module.'.'.$action, 'guard_name' => 'web']);
                 Role::where('name', 'admin')->where('guard_name', 'web')->first()?->givePermissionTo($permission);

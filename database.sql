@@ -17,7 +17,6 @@ DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS invoice_items;
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS services;
-DROP TABLE IF EXISTS referral_sources;
 DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS company_settings;
 DROP TABLE IF EXISTS users;
@@ -105,22 +104,6 @@ CREATE TABLE customers (
     CONSTRAINT fk_customers_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE referral_sources (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
-    phone VARCHAR(30) NULL,
-    reference_number VARCHAR(100) NULL,
-    commission_type ENUM('fixed','percentage','none') NOT NULL DEFAULT 'none',
-    commission_value DECIMAL(14,2) NOT NULL DEFAULT 0.00,
-    notes TEXT NULL,
-    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-    KEY idx_referrals_name (name),
-    KEY idx_referrals_number (reference_number),
-    KEY idx_referrals_deleted_at (deleted_at)
-) ENGINE=InnoDB;
-
 CREATE TABLE services (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     service_code VARCHAR(50) NULL,
@@ -141,7 +124,7 @@ CREATE TABLE invoices (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_setting_id BIGINT UNSIGNED NULL,
     customer_id BIGINT UNSIGNED NOT NULL,
-    referral_source_id BIGINT UNSIGNED NULL,
+    referral_source VARCHAR(200) NULL,
     created_by BIGINT UNSIGNED NULL,
     invoice_number VARCHAR(100) NOT NULL,
     invoice_date DATE NOT NULL,
@@ -170,12 +153,10 @@ CREATE TABLE invoices (
     KEY idx_invoices_customer_date (customer_id, invoice_date),
     KEY idx_invoices_status_date (status, invoice_date),
     KEY idx_invoices_due_date (due_date, status),
-    KEY idx_invoices_referral_date (referral_source_id, invoice_date),
     KEY idx_invoices_created_by (created_by),
     KEY idx_invoices_deleted_at (deleted_at),
     CONSTRAINT fk_invoices_company FOREIGN KEY (company_setting_id) REFERENCES company_settings(id) ON DELETE SET NULL,
     CONSTRAINT fk_invoices_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
-    CONSTRAINT fk_invoices_referral FOREIGN KEY (referral_source_id) REFERENCES referral_sources(id) ON DELETE SET NULL,
     CONSTRAINT fk_invoices_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT fk_invoices_cancelled_by FOREIGN KEY (cancelled_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
@@ -236,7 +217,7 @@ CREATE TABLE expenses (
     amount DECIMAL(14,2) NOT NULL,
     payment_method ENUM('cash','bank','bkash','nagad','rocket','card','other') NOT NULL DEFAULT 'cash',
     invoice_id BIGINT UNSIGNED NULL,
-    referral_source_id BIGINT UNSIGNED NULL,
+    referral_source VARCHAR(200) NULL,
     created_by BIGINT UNSIGNED NULL,
     notes TEXT NULL,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
@@ -244,10 +225,8 @@ CREATE TABLE expenses (
     deleted_at TIMESTAMP NULL,
     KEY idx_expenses_date_category (expense_date, category),
     KEY idx_expenses_invoice (invoice_id),
-    KEY idx_expenses_referral (referral_source_id),
     KEY idx_expenses_deleted_at (deleted_at),
     CONSTRAINT fk_expenses_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL,
-    CONSTRAINT fk_expenses_referral FOREIGN KEY (referral_source_id) REFERENCES referral_sources(id) ON DELETE SET NULL,
     CONSTRAINT fk_expenses_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 

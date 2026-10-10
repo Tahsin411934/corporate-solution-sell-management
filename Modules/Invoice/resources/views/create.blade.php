@@ -22,9 +22,7 @@
                     @foreach($customers as $customer)<option value="{{ $customer->id }}" @selected(old('customer_id') == $customer->id)>{{ $customer->name }}</option>@endforeach
                 </x-form-select>
                 @if($customers->isEmpty())<p id="customer-empty-hint" class="text-sm text-amber-700">Add a customer to start your invoice.</p>@endif
-                <x-form-select label="Referral source" name="referral_source_id" placeholder="No referral">
-                    @foreach($referrals as $referral)<option value="{{ $referral->id }}" @selected(old('referral_source_id') == $referral->id)>{{ $referral->name }}</option>@endforeach
-                </x-form-select>
+                <x-form-input label="Referral source" name="referral_source" :value="old('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
                 <x-form-input label="Invoice number" name="invoice_number" :value="old('invoice_number', $invoiceNumber)" maxlength="100" required />
                 <x-form-input label="Invoice date" name="invoice_date" type="date" :value="old('invoice_date', now()->toDateString())" required />
                 <x-form-input label="Due date" name="due_date" type="date" :value="old('due_date')" />

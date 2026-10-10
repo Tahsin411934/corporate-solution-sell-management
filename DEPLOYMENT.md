@@ -69,6 +69,11 @@ not undo database changes. Do not generate a new APP_KEY during updates.
 Verify login, invoice printing/uploads and the other hosted applications after the
 first successful run. No deployment health URL has been assumed in this workflow.
 
+The referral text migration retains names on invoices and expenses, removes their
+referral foreign keys and deletes the old referral catalog table and permissions.
+The catalog's contact/commission metadata is removed. Restoring that metadata
+requires a database backup; migration rollback can reconstruct names only.
+
 No `git clean` is run. Ignored `.env`, installed dependencies and uploaded files
 are retained; keep production secrets and uploads outside tracked code paths.
 View saved server edits with `git stash list`. Do not automatically apply a stash

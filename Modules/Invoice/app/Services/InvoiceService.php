@@ -16,7 +16,7 @@ class InvoiceService
     {
         return DB::transaction(function () use ($data, $userId) {
             $invoice = Invoice::create(Arr::only($data, [
-                'customer_id', 'referral_source_id', 'invoice_number', 'invoice_date',
+                'customer_id', 'referral_source', 'invoice_number', 'invoice_date',
                 'due_date', 'currency_code', 'discount_type', 'discount_value',
                 'tax_rate', 'payment_terms', 'notes',
             ]) + ['created_by' => $userId, 'company_setting_id' => CompanySetting::active()->orderBy('id')->value('id')]);

@@ -1,4 +1,6 @@
 <?php
+// Historical schema needed for existing installations; the later text-referral
+// migration copies names and removes this table from the final schema.
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

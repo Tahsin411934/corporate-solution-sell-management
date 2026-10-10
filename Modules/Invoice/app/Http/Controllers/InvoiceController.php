@@ -9,7 +9,6 @@ use Illuminate\View\View;
 use Modules\Customer\Models\Customer;
 use Modules\Invoice\Http\Requests\StoreInvoiceRequest;
 use Modules\Invoice\Services\InvoiceService;
-use Modules\ReferralSource\Models\ReferralSource;
 use Modules\Service\Models\Service;
 use Modules\Invoice\Models\Invoice;
 use Modules\Invoice\Services\InvoiceDataTableService;
@@ -45,7 +44,6 @@ class InvoiceController extends Controller
     {
         return view('invoice::create', [
             'customers' => Customer::orderBy('name')->get(['id', 'name']),
-            'referrals' => ReferralSource::orderBy('name')->get(['id', 'name']),
             'services' => Service::where('is_active', true)->orderBy('name')->get(['id', 'name', 'description', 'default_rate', 'default_cost']),
             'invoiceNumber' => 'INV-'.now()->format('Ymd').'-'.Str::upper((string) Str::ulid()),
         ]);

@@ -15,7 +15,6 @@ class AuditLogServiceProvider extends ServiceProvider
             \Modules\CompanySettings\Models\CompanySetting::class,
             \Modules\Customer\Models\Customer::class,
             \Modules\Service\Models\Service::class,
-            \Modules\ReferralSource\Models\ReferralSource::class,
             \Modules\Invoice\Models\Invoice::class,
             \Modules\Invoice\Models\InvoiceItem::class,
             \Modules\Payment\Models\Payment::class,

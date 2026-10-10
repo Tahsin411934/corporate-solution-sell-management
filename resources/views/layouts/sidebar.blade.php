@@ -7,7 +7,6 @@
         ]],
         'catalog' => ['Catalog & Partners', 'fa-briefcase', [
             ['Services', 'services.index', 'services.*', 'fa-briefcase', 'services.view'],
-            ['Referral Sources', 'referral-sources.index', 'referral-sources.*', 'fa-user-group', 'referral-sources.view'],
         ]],
         'finance' => ['Finance & Reports', 'fa-chart-line', [
             ['Expenses', 'expenses.index', 'expenses.*', 'fa-wallet', 'expenses.view'],
