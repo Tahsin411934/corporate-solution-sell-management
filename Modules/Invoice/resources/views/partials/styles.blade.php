@@ -49,6 +49,8 @@
     .invoice-signoff {align-self:flex-end;min-width:43mm;text-align:right;margin:3mm 0 2mm;break-inside:avoid;font-size:10pt;}
     .signature-space {height:8mm;border-bottom:.4mm dotted #333;margin-bottom:1mm;}
     .invoice-signoff strong,.invoice-signoff b {display:block;color:#072652;}
+    .invoice-signoff .signatory-qualifications {white-space:pre-line;font-size:9pt;line-height:1.35;}
+    .invoice-signoff .signatory-designation {color:#171717;}
     .invoice-thanks {text-align:center;font-size:11pt;font-style:italic;margin:1mm 0 3mm!important;}
     .invoice-footer {margin-top:auto;text-align:center;font-size:9pt;padding-top:3mm;break-inside:avoid;}
     .invoice-footer strong {font-size:12pt;color:#001c35;}.invoice-small {font-size:8pt;}

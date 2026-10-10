@@ -32,6 +32,8 @@ class CompanySetting extends Model
         'bank_details',
         'invoice_footer',
         'authorized_person',
+        'authorized_person_qualifications',
+        'authorized_person_designation',
         'is_active',
         'created_by',
     ];

@@ -28,6 +28,8 @@ class UpdateCompanySettingRequest extends FormRequest
             'bank_details' => ['sometimes', 'nullable', 'array'],
             'invoice_footer' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'authorized_person' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'authorized_person_qualifications' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'authorized_person_designation' => ['sometimes', 'nullable', 'string', 'max:150'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

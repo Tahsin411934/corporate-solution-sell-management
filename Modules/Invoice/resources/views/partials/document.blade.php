@@ -75,6 +75,8 @@
         @if($invoice->notes)<section class="invoice-notes"><strong>Notes:</strong> <p>{{ $invoice->notes }}</p></section>@endif
         <div class="invoice-signoff"><p>Sincerely yours,</p><div class="signature-space"></div>
             @if($company?->authorized_person)<strong>{{ $company->authorized_person }}</strong>@endif
+            @if($company?->authorized_person_qualifications)<p class="signatory-qualifications">{{ $company->authorized_person_qualifications }}</p>@endif
+            @if($company?->authorized_person_designation)<b class="signatory-designation">{{ $company->authorized_person_designation }}</b>@endif
             <b>{{ $companyName }}</b>
         </div>
         <p class="invoice-thanks">{{ $company?->invoice_footer ?: 'Thank you for choosing '.$companyName.'.' }}</p>

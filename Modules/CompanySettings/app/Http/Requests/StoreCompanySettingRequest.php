@@ -28,6 +28,8 @@ class StoreCompanySettingRequest extends FormRequest
             'bank_details' => ['nullable', 'array'],
             'invoice_footer' => ['nullable', 'string', 'max:5000'],
             'authorized_person' => ['nullable', 'string', 'max:150'],
+            'authorized_person_qualifications' => ['nullable', 'string', 'max:1000'],
+            'authorized_person_designation' => ['nullable', 'string', 'max:150'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
