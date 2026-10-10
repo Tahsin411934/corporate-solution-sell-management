@@ -33,7 +33,7 @@
                     @if($customers->isEmpty())<p class="text-sm text-amber-700">Select New customer to enter customer details.</p>@endif
                 </div>
                 <div id="new-customer-name-field" hidden>
-                    <x-form-input label="Customer name" name="new_customer_data[name]" id="new-customer-name" :value="old('new_customer_data.name')" maxlength="200" />
+                    <x-form-input label="Customer name" name="new_customer_data[name]" id="new-customer-name" :value="old('new_customer_data.name')" maxlength="200" required />
                 </div>
                 <div id="new-customer-details" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" hidden>
                     <x-form-input label="BIN" name="new_customer_data[bin_number]" :value="old('new_customer_data.bin_number')" maxlength="80" />
