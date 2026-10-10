@@ -34,6 +34,8 @@
     .invoice-items .money {text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
     .invoice-items .adjustment td {font-size:9pt;padding:1mm 3mm;text-align:right;}
     .invoice-items .invoice-total td {background:#bfe5f8;color:#081f4d;font-weight:800;text-align:right;}
+    .invoice-items .adjustment td:first-child,
+    .invoice-items .invoice-total td:first-child {border:0;background:transparent;}
     .invoice-payment-request {margin:4mm 0;}
     .invoice-payment-request p + p {margin-top:3mm;}
     .invoice-payment-request strong,.invoice-notes strong {color:#071f50;}
