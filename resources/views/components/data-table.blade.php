@@ -13,6 +13,7 @@
     'filters' => [],
     'order' => [[0, 'desc']],
     'scrollHeight' => '60vh',
+    'stackedRows' => false,
 ])
 
 @php
@@ -20,7 +21,7 @@
     $canCreate = ! $createPermission || auth()->user()?->can($createPermission.'.create');
 @endphp
 
-<div class="reusable-data-table bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+<div class="reusable-data-table {{ $stackedRows ? 'stacked-data-table' : '' }} bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
     {{-- TABLE HEADER --}}
     <div
         class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800 gap-4">
@@ -159,10 +160,21 @@
                     data: buildAjaxData(@json($filters ?? []))
                 },
                 columns: columnConfig,
+                @if($stackedRows)
+                createdRow: function(row) {
+                    const labels = @json($columns);
+                    $(row).children('td').each(function(index) {
+                        this.dataset.label = labels[index];
+                        if (["action", "actions", "row_actions"].includes(columnConfig[index]?.data)) {
+                            this.classList.add('row-actions');
+                        }
+                    });
+                },
+                @endif
                 dom: '<"flex flex-col md:flex-row items-center justify-between gap-4 mb-4"lBf>rt<"flex flex-col md:flex-row items-center justify-between gap-4 mt-4"ip>',
                 buttons: tableButtons,
-                scrollX: true,
-                scrollY: @json($scrollHeight),
+                scrollX: @json(!$stackedRows),
+                scrollY: @json($stackedRows ? '' : $scrollHeight),
                 scrollCollapse: true,
                 // Keep every column reachable through horizontal scrolling.
                 responsive: false,
@@ -309,6 +321,39 @@
         display: flex; flex-wrap: wrap; gap: .5rem; max-width: 100%;
     }
     .reusable-data-table .dataTables_paginate { white-space: normal; }
+    .stacked-data-table { container-type: inline-size; }
+    .stacked-data-table table { table-layout: fixed; width: 100% !important; }
+    .stacked-data-table table th,
+    .stacked-data-table table td { white-space: normal; overflow-wrap: anywhere; }
+    .stacked-data-table table thead th,
+    .stacked-data-table table tbody td { padding: 10px 8px !important; }
+    @container (max-width: 1050px) {
+        .stacked-data-table table,
+        .stacked-data-table table tbody { display: block; }
+        .stacked-data-table table thead { display: none; }
+        .stacked-data-table table tbody tr {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+            border: 1px solid #ced5df; border-radius: 12px;
+            margin-bottom: 12px; overflow: hidden;
+        }
+        .stacked-data-table table tbody td {
+            display: flex; flex-direction: column; gap: 4px; min-width: 0;
+            border: 0 !important; padding: 10px 12px !important;
+        }
+        .stacked-data-table table tbody td::before {
+            content: attr(data-label); font-size: 11px; font-weight: 600; color: #64748b;
+        }
+        .stacked-data-table table tbody td.row-actions {
+            grid-column: 1 / -1; border-top: 1px solid #ced5df !important;
+            flex-direction: row; align-items: center; justify-content: space-between;
+        }
+        .stacked-data-table table tbody td.row-actions a { padding: 8px 4px; }
+        .stacked-data-table table tbody td.dataTables_empty { grid-column: 1 / -1; }
+        .stacked-data-table table tbody td.dataTables_empty::before { content: none; }
+        .dark .stacked-data-table table tbody td::before { color: #9ca3af; }
+        .dark .stacked-data-table table tbody tr { border-color: #374151; }
+        .stacked-data-table .dataTables_filter input { width: 100%; }
+    }
     @media (max-width: 639px) {
         .reusable-data-table .dataTables_filter,
         .reusable-data-table .dataTables_filter label { display: block; width: 100%; }

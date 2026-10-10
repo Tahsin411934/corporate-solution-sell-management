@@ -1,8 +1,9 @@
 <x-app-layout>
-    <div class="p-6">
+    <div class="p-3 sm:p-6">
         <x-data-table id="invoiceTable" title="Invoices" icon="fas fa-file-invoice-dollar"
             createPermission="invoices" buttonText="Create invoice" :buttonLink="route('invoices.create')"
             :ajaxUrl="route('invoices.data')"
+            :stackedRows="true"
             :columns="['Invoice number', 'Customer', 'Date', 'Currency', 'Total', 'Received', 'Balance', 'Status', 'Actions']"
             :dtColumns="[
                 ['data' => 'invoice_number', 'name' => 'invoices.invoice_number'],
