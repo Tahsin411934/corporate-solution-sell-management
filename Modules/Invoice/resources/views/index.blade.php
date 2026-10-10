@@ -4,6 +4,7 @@
             createPermission="invoices" buttonText="Create invoice" :buttonLink="route('invoices.create')"
             :ajaxUrl="route('invoices.data')"
             :stackedRows="true"
+            id-column="invoices.id"
             :columns="['Invoice number', 'Customer', 'Date', 'Currency', 'Invoice total', 'Received', 'Due', 'Status', 'Actions']"
             :dtColumns="[
                 ['data' => 'invoice_number', 'name' => 'invoices.invoice_number'],
@@ -15,6 +16,6 @@
                 ['data' => 'balance_amount'],
                 ['data' => 'status', 'name' => 'invoices.status'],
                 ['data' => 'actions', 'orderable' => false, 'searchable' => false],
-            ]" :order="[[2, 'desc']]" />
+            ]" />
     </div>
 </x-app-layout>

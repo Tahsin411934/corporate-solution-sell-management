@@ -31,7 +31,7 @@
         @endphp
         <x-data-table :id="'report-'.$type" :title="$types[$type]" icon="fas fa-chart-line" :buttonId="null"
             :columns="array_values($columns)" :dtColumns="$dtColumns"
-            :ajaxUrl="route('reports.data', array_merge($filters, ['report' => $type]))" :order="[[0, 'asc']]" />
+            :ajaxUrl="route('reports.data', array_merge($filters, ['report' => $type]))" />
         <p class="text-xs text-gray-500">Table exports contain the currently loaded page, not the complete report.</p>
     </div>
 </x-app-layout>

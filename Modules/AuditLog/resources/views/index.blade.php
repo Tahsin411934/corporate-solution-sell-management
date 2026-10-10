@@ -9,6 +9,6 @@
                 ['data' => 'ip_address'], ['data' => 'user_agent'],
             ];
         @endphp
-        <x-data-table id="auditLogsTable" title="Audit Logs" icon="fas fa-clock-rotate-left" :button-id="null" :columns="['Date', 'User', 'Event', 'Entity', 'Entity ID', 'Previous Values', 'New Values', 'IP Address', 'User Agent']" :dt-columns="$columns" :ajax-url="route('audit-logs.data')" :order="[[0, 'desc']]" />
+        <x-data-table id="auditLogsTable" title="Audit Logs" icon="fas fa-clock-rotate-left" :button-id="null" :columns="['Date', 'User', 'Event', 'Entity', 'Entity ID', 'Previous Values', 'New Values', 'IP Address', 'User Agent']" :dt-columns="$columns" :ajax-url="route('audit-logs.data')" />
     </div>
 </x-app-layout>

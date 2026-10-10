@@ -11,7 +11,8 @@
     'dtColumns' => [],
     'exportButtons' => true,
     'filters' => [],
-    'order' => [[0, 'desc']],
+    'order' => null,
+    'idColumn' => 'id',
     'scrollHeight' => '60vh',
     'stackedRows' => false,
 ])
@@ -82,6 +83,12 @@
                     column.render = (0, eval)('(' + column.render + ')');
                 }
             });
+            let idIndex = columnConfig.findIndex(column => column.data === 'id');
+            if (idIndex === -1) {
+                idIndex = columnConfig.length;
+                columnConfig.push({data: 'id', name: @json($idColumn), visible: false, searchable: false, exportable: false});
+                tableElement.find('thead tr').append($('<th>').text('ID'));
+            }
             const exportColumns = columnConfig.map((column, index) =>
                 column.exportable === false || ["action", "actions", "row_actions"].includes(column.data) ? null : index
             ).filter(index => index !== null);
@@ -178,7 +185,7 @@
                 scrollCollapse: true,
                 // Keep every column reachable through horizontal scrolling.
                 responsive: false,
-                order: @json($order),
+                order: @json($order) || [[idIndex, 'asc']],
                 language: {
                     search: "",
                     searchPlaceholder: "Search records...",

@@ -11,7 +11,7 @@
     'showUrl' => '',
     'formTitle' => null,
     'idField' => 'id',
-    'order' => [[0, 'desc']],
+    'order' => null,
     'exportButtons' => true,
     'createPermission' => null,
 ])

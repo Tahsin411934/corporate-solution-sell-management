@@ -20,7 +20,6 @@
         destroy-url="{{ route('customers.destroy', ':id') }}"
         drawer-title="Customer"
         id-field="customer_id"
-        :order="[[0, 'desc']]"
     >
         <input type="hidden" name="_method" id="customer-method" value="POST">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

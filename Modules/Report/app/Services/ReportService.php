@@ -27,18 +27,18 @@ class ReportService
 
     public function query(string $type, array $filters): Builder
     {
-        if ($type === 'customers') return DB::table('v_customer_balances');
+        if ($type === 'customers') return DB::table('v_customer_balances')->select('v_customer_balances.*', 'customer_id as id');
         $query = match ($type) {
             'invoices' => DB::table('v_invoice_balances as v')->join('invoices as i', 'i.id', '=', 'v.id')
                 ->leftJoin('customers as c', 'c.id', '=', 'v.customer_id')->select('v.*', 'c.name as customer_name', 'i.currency_code'),
             'payments' => DB::table('payments as p')->whereNull('p.deleted_at')
                 ->join('invoices as i', 'i.id', '=', 'p.invoice_id')->leftJoin('customers as c', 'c.id', '=', 'p.customer_id')
-                ->select('p.payment_date', 'p.receipt_number', 'p.amount', 'p.payment_method', 'p.transaction_number', 'i.invoice_number', 'i.currency_code', 'c.name as customer_name'),
+                ->select('p.id', 'p.payment_date', 'p.receipt_number', 'p.amount', 'p.payment_method', 'p.transaction_number', 'i.invoice_number', 'i.currency_code', 'c.name as customer_name'),
             'expenses' => DB::table('expenses as e')->whereNull('e.deleted_at')->leftJoin('invoices as i', 'i.id', '=', 'e.invoice_id')
-                ->select('e.expense_date', 'e.category', 'e.description', 'e.amount', 'e.payment_method', 'i.invoice_number'),
+                ->select('e.id', 'e.expense_date', 'e.category', 'e.description', 'e.amount', 'e.payment_method', 'i.invoice_number'),
             'profit' => DB::table('invoices as i')->whereNull('i.deleted_at')->whereNotIn('i.status', ['draft', 'cancelled'])
                 ->leftJoin('customers as c', 'c.id', '=', 'i.customer_id')
-                ->select('i.invoice_number', 'i.invoice_date', 'i.currency_code', 'i.subtotal', 'i.discount_amount', 'i.total_cost', 'i.total_profit', 'i.status', 'c.name as customer_name'),
+                ->select('i.id', 'i.invoice_number', 'i.invoice_date', 'i.currency_code', 'i.subtotal', 'i.discount_amount', 'i.total_cost', 'i.total_profit', 'i.status', 'c.name as customer_name'),
         };
         $date = match ($type) { 'payments' => 'p.payment_date', 'expenses' => 'e.expense_date', default => 'i.invoice_date' };
         // Wrap joined queries so DataTables can safely search/sort projected aliases.
