@@ -53,6 +53,20 @@ class InvoiceItemService
         return $invoice;
     }
 
+    public function replace(Invoice $invoice, array $items): void
+    {
+        // The caller holds the invoice lock and validates its lifecycle and payments.
+        $invoice->items()->delete();
+        foreach (array_values($items) as $index => $data) {
+            $item = $invoice->items()->make(\Illuminate\Support\Arr::only($data, [
+                'service_id', 'description', 'quantity', 'unit', 'rate', 'unit_cost',
+            ]) + ['sort_order' => $index + 1]);
+            $this->calculate($item);
+            $item->save();
+        }
+        $this->updateTotals($invoice);
+    }
+
     private function money(string $value): string
     {
         $rounded = bcadd($value, bccomp($value, '0', 6) < 0 ? '-0.005' : '0.005', 2);

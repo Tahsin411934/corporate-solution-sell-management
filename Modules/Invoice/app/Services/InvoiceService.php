@@ -79,6 +79,42 @@ class InvoiceService
         });
     }
 
+    public function update(Invoice $invoice, array $data, int $userId): Invoice
+    {
+        return DB::transaction(function () use ($invoice, $data, $userId) {
+            $invoice = Invoice::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
+            if ($invoice->status === 'cancelled') {
+                throw ValidationException::withMessages(['invoice' => 'Cancelled invoices cannot be edited.']);
+            }
+            $hasRecords = $invoice->payments()->withTrashed()->exists()
+                || \Modules\Expense\Models\Expense::withTrashed()->where('invoice_id', $invoice->id)->exists();
+            if ($hasRecords && ($data['currency_code'] !== $invoice->currency_code
+                || !empty($data['new_customer']) || (int) $data['customer_id'] !== $invoice->customer_id)) {
+                throw ValidationException::withMessages(['customer_id' => 'Customer and currency cannot change once payments or expenses have been recorded.']);
+            }
+            if (!empty($data['new_customer'])) {
+                $data['customer_id'] = app(\Modules\Customer\Services\CustomerService::class)->create(
+                    Arr::only($data['new_customer_data'], ['name', 'bin_number', 'tin_number', 'address']), $userId
+                )->id;
+            }
+            $invoice->fill(Arr::only($data, ['customer_id', 'referral_source', 'invoice_number', 'invoice_date',
+                'due_date', 'currency_code', 'discount_type', 'discount_value', 'tax_rate', 'payment_terms', 'notes', 'bill_title', 'bill_subtitle']));
+            $invoice->save();
+            $this->items->replace($invoice, $data['items']);
+            $invoice->refresh();
+            $received = (string) $invoice->payments()->sum('amount');
+            if (bccomp($received, $invoice->total_amount, 2) > 0) {
+                throw ValidationException::withMessages(['items' => 'Invoice total cannot be less than payments already received.']);
+            }
+            if ($invoice->status !== 'draft') {
+                $invoice->status = bccomp($received, $invoice->total_amount, 2) >= 0 ? 'paid'
+                    : (bccomp($received, '0', 2) > 0 ? 'partial' : ($invoice->due_date?->isBefore(today()) ? 'overdue' : 'issued'));
+                $invoice->save();
+            }
+            return $invoice->fresh(['items', 'payments']);
+        }, 5);
+    }
+
     public function cancel(Invoice $invoice, string $reason, int $userId): Invoice
     {
         return DB::transaction(function () use ($invoice, $reason, $userId) {

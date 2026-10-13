@@ -9,6 +9,8 @@ Route::middleware(['web', 'auth', 'verified'])->group(function () {
     Route::get('/invoices/create', [InvoiceController::class, 'create'])->middleware('can:invoices.create')->name('invoices.create');
     Route::post('/invoices', [InvoiceController::class, 'store'])->middleware('can:invoices.create')->name('invoices.store');
     Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->middleware('can:invoices.view')->name('invoices.show');
+    Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])->middleware('can:invoices.update')->name('invoices.edit');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])->middleware('can:invoices.update')->name('invoices.update');
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->middleware('can:invoices.print')->name('invoices.print');
     Route::post('/invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->middleware('can:invoices.issue')->name('invoices.issue');
     Route::post('/invoices/{invoice}/expenses', [InvoiceController::class, 'recordExpense'])->middleware(['can:invoices.view', 'can:expenses.create'])->name('invoices.expenses.store');

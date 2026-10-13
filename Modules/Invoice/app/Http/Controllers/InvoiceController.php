@@ -52,6 +52,24 @@ class InvoiceController extends Controller
     {
         return view('invoice::print', ['invoice' => $service->details($invoice)]);
     }
+    public function edit(Invoice $invoice, InvoiceService $service): View
+    {
+        if ($invoice->status === 'cancelled') {
+            return abort(422, 'Cancelled invoices cannot be edited.');
+        }
+        return view('invoice::create', [
+            'invoice' => $service->details($invoice), 'invoiceNumber' => $invoice->invoice_number,
+            'customers' => Customer::orderBy('name')->get(['id', 'name']),
+            'services' => Service::where('is_active', true)->orderBy('name')->get(['id', 'name', 'description', 'default_rate', 'default_cost']),
+        ]);
+    }
+
+    public function update(\Modules\Invoice\Http\Requests\UpdateInvoiceRequest $request, Invoice $invoice, InvoiceService $service): RedirectResponse
+    {
+        $invoice = $service->update($invoice, $request->validated(), $request->user()->id);
+        return redirect()->route($request->user()->can('invoices.view') ? 'invoices.show' : 'invoices.edit', $invoice)
+            ->with('success', 'Invoice updated successfully.');
+    }
     public function issue(IssueInvoiceRequest $request, Invoice $invoice, InvoiceService $service): RedirectResponse
     {
         $service->issue($invoice);

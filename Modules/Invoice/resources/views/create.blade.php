@@ -1,7 +1,16 @@
 <x-app-layout>
+    @php
+        $isEdit = isset($invoice);
+        $editDefaults = $isEdit ? $invoice->toArray() : [];
+        if ($isEdit) {
+            $editDefaults['invoice_date'] = $invoice->invoice_date->toDateString();
+            $editDefaults['due_date'] = $invoice->due_date?->toDateString();
+        }
+        $fieldValue = fn ($key, $default = null) => old($key, data_get($editDefaults, $key, $default));
+    @endphp
     <div class="invoice-builder max-w-7xl mx-auto p-4 md:p-6 space-y-5">
         <div class="flex flex-wrap justify-between items-center gap-3">
-            <div><p class="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Billing / New invoice</p><h1 class="text-2xl font-semibold text-gray-900">Create invoice</h1><p class="text-sm text-gray-500 mt-1">Choose a customer, add services and record any payment received.</p></div>
+            <div><p class="text-xs font-semibold text-primary uppercase tracking-wide mb-1">Billing / {{ $isEdit ? 'Edit invoice' : 'New invoice' }}</p><h1 class="text-2xl font-semibold text-gray-900">{{ $isEdit ? 'Edit invoice' : 'Create invoice' }}</h1><p class="text-sm text-gray-500 mt-1">{{ $isEdit ? 'Update invoice details and items. Existing payments and expenses stay recorded.' : 'Choose a customer, add services and record any payment received.' }}</p></div>
             @can('invoices.view')<a href="{{ route('invoices.index') }}" class="border rounded-lg px-4 py-2 bg-white text-sm text-gray-600">Back to invoices</a>@endcan
         </div>
         @if(session('success'))<div role="status" class="p-4 rounded-lg bg-green-50 text-green-800">{{ session('success') }}</div>@endif
@@ -10,44 +19,45 @@
         @else
             <div id="invoice-errors" role="alert" tabindex="-1" class="p-4 rounded-lg bg-red-50 text-red-800" hidden></div>
         @endif
-        <form action="{{ route('invoices.store') }}" method="POST" id="invoice-create" novalidate>
+        <form action="{{ $isEdit ? route('invoices.update', $invoice) : route('invoices.store') }}" method="POST" id="invoice-create" novalidate>
             @csrf
+            @if($isEdit) @method('PUT') @endif
             <div class="invoice-workspace">
             <div class="space-y-5 min-w-0">
             <section class="bg-white rounded-xl border p-5">
                 <h2 class="font-semibold text-gray-800 mb-4">1. Customer & invoice details</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <input type="hidden" name="auto_invoice_number" value="1">
+                    @unless($isEdit)<input type="hidden" name="auto_invoice_number" value="1">@endunless
                     <x-form-input label="Invoice number" name="invoice_number" :value="$invoiceNumber" readonly />
-                    <p class="mt-1 text-xs text-gray-500">Preview. Final serial is assigned when saved, using the invoice date.</p>
+                    @unless($isEdit)<p class="mt-1 text-xs text-gray-500">Preview. Final serial is assigned when saved, using the invoice date.</p>@endunless
                 </div>
                 <div class="flex items-center pt-6">
                     <label for="new-customer-toggle" class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <input id="new-customer-toggle" name="new_customer" type="checkbox" value="1" @checked(old('new_customer')) @disabled(!auth()->user()->can('customers.create')) class="rounded border-gray-300 text-primary focus:ring-primary">
+                        <input id="new-customer-toggle" name="new_customer" type="checkbox" value="1" @checked($fieldValue('new_customer')) @disabled(!auth()->user()->can('customers.create')) class="rounded border-gray-300 text-primary focus:ring-primary">
                         New customer
                     </label>
                 </div>
                 <div id="existing-customer-fields">
                     <x-form-select label="Customer" name="customer_id" required>
-                        @foreach($customers as $customer)<option value="{{ $customer->id }}" @selected(old('customer_id') == $customer->id)>{{ $customer->name }}</option>@endforeach
+                        @foreach($customers as $customer)<option value="{{ $customer->id }}" @selected($fieldValue('customer_id') == $customer->id)>{{ $customer->name }}</option>@endforeach
                     </x-form-select>
                     @if($customers->isEmpty())<p class="text-sm text-amber-700">Select New customer to enter customer details.</p>@endif
                 </div>
                 <div id="new-customer-name-field" hidden>
-                    <x-form-input label="Customer name" name="new_customer_data[name]" id="new-customer-name" :value="old('new_customer_data.name')" maxlength="200" required />
+                    <x-form-input label="Customer name" name="new_customer_data[name]" id="new-customer-name" :value="$fieldValue('new_customer_data.name')" maxlength="200" required />
                 </div>
                 <div id="new-customer-details" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" hidden>
-                    <x-form-input label="BIN" name="new_customer_data[bin_number]" :value="old('new_customer_data.bin_number')" maxlength="80" />
-                    <x-form-input label="TIN" name="new_customer_data[tin_number]" :value="old('new_customer_data.tin_number')" maxlength="80" />
-                    <div class="md:col-span-2"><x-form-textarea label="Address" name="new_customer_data[address]" :value="old('new_customer_data.address', '')" maxlength="2000" /></div>
+                    <x-form-input label="BIN" name="new_customer_data[bin_number]" :value="$fieldValue('new_customer_data.bin_number')" maxlength="80" />
+                    <x-form-input label="TIN" name="new_customer_data[tin_number]" :value="$fieldValue('new_customer_data.tin_number')" maxlength="80" />
+                    <div class="md:col-span-2"><x-form-textarea label="Address" name="new_customer_data[address]" :value="$fieldValue('new_customer_data.address', '')" maxlength="2000" /></div>
                 </div>
-                <x-form-input label="Referral source" name="referral_source" :value="old('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
-                <x-form-input label="Bill title" name="bill_title" maxlength="150" :value="old('bill_title', $companyDefaults->bill_title ?? \Modules\Invoice\Models\Invoice::DEFAULT_BILL_TITLE)" required />
-                <x-form-input label="Bill subtitle (optional)" name="bill_subtitle" maxlength="250" :value="old('bill_subtitle', isset($companyDefaults) ? $companyDefaults->bill_subtitle : \Modules\Invoice\Models\Invoice::DEFAULT_BILL_SUBTITLE)" />
-                <x-form-input label="Invoice date" name="invoice_date" type="date" :value="old('invoice_date', now()->toDateString())" required />
-                <x-form-input label="Due date" name="due_date" type="date" :value="old('due_date')" />
-                <x-form-input label="Currency code" name="currency_code" :value="old('currency_code', 'BDT')" pattern="[A-Z]{3}" maxlength="3" required />
+                <x-form-input label="Referral source" name="referral_source" :value="$fieldValue('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
+                <x-form-input label="Bill title" name="bill_title" maxlength="150" :value="$fieldValue('bill_title', $companyDefaults->bill_title ?? \Modules\Invoice\Models\Invoice::DEFAULT_BILL_TITLE)" required />
+                <x-form-input label="Bill subtitle (optional)" name="bill_subtitle" maxlength="250" :value="$fieldValue('bill_subtitle', isset($companyDefaults) ? $companyDefaults->bill_subtitle : \Modules\Invoice\Models\Invoice::DEFAULT_BILL_SUBTITLE)" />
+                <x-form-input label="Invoice date" name="invoice_date" type="date" :value="$fieldValue('invoice_date', now()->toDateString())" required />
+                <x-form-input label="Due date" name="due_date" type="date" :value="$fieldValue('due_date')" />
+                <x-form-input label="Currency code" name="currency_code" :value="$fieldValue('currency_code', 'BDT')" pattern="[A-Z]{3}" maxlength="3" required />
                 </div>
             </section>
             <section class="bg-white rounded-xl border p-5 space-y-4">
@@ -55,10 +65,10 @@
                 <div id="invoice-items" class="space-y-4"></div>
                 <button type="button" id="add-item" class="w-full border border-dashed border-primary text-primary px-4 py-3 rounded-lg text-sm font-semibold"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Add another item</button>
             </section>
-            <details class="bg-white rounded-xl border p-5" @if(old('payment_terms') || old('notes')) open @endif>
+            <details class="bg-white rounded-xl border p-5" @if($fieldValue('payment_terms') || $fieldValue('notes')) open @endif>
                 <summary class="cursor-pointer font-semibold text-sm text-gray-700">Notes & payment terms <span class="font-normal text-gray-400">(optional)</span></summary>
-                <div class="space-y-4 mt-4"><x-form-input label="Payment terms" name="payment_terms" :value="old('payment_terms')" maxlength="255" placeholder="e.g. Payment due within 15 days" />
-                <x-form-textarea label="Notes" name="notes" :value="old('notes', '')" maxlength="10000" placeholder="Add any information for your customer" /></div>
+                <div class="space-y-4 mt-4"><x-form-input label="Payment terms" name="payment_terms" :value="$fieldValue('payment_terms')" maxlength="255" placeholder="e.g. Payment due within 15 days" />
+                <x-form-textarea label="Notes" name="notes" :value="$fieldValue('notes', '')" maxlength="10000" placeholder="Add any information for your customer" /></div>
             </details>
             </div>
             <aside class="invoice-summary space-y-4">
@@ -66,36 +76,38 @@
                 <h2 class="font-semibold">3. Review & save</h2>
                 <p class="text-xs text-gray-500">Discount applies before tax.</p>
                 <x-form-select label="Discount type" name="discount_type" :placeholder="false" :searchable="false">
-                    <option value="fixed" @selected(old('discount_type', 'fixed') === 'fixed')>Fixed</option>
-                    <option value="percentage" @selected(old('discount_type') === 'percentage')>Percentage</option>
+                    <option value="fixed" @selected($fieldValue('discount_type', 'fixed') === 'fixed')>Fixed</option>
+                    <option value="percentage" @selected($fieldValue('discount_type') === 'percentage')>Percentage</option>
                 </x-form-select>
-                <x-form-input label="Discount value" name="discount_value" type="number" :value="old('discount_value', 0)" min="0" step="0.01" required />
-                <x-form-input label="Tax rate (%)" name="tax_rate" type="number" :value="old('tax_rate', 0)" min="0" max="999.9999" step="0.0001" required />
+                <x-form-input label="Discount value" name="discount_value" type="number" :value="$fieldValue('discount_value', 0)" min="0" step="0.01" required />
+                <x-form-input label="Tax rate (%)" name="tax_rate" type="number" :value="$fieldValue('tax_rate', 0)" min="0" max="999.9999" step="0.0001" required />
             <input type="hidden" name="save_mode" id="invoice-save-mode" value="{{ auth()->user()->can('invoices.issue') ? 'issue' : 'draft' }}">
-            @if(auth()->user()->can('payments.create') && auth()->user()->can('invoices.issue'))
-                <x-form-input label="Received now" name="initial_payment_amount" id="paid-now" type="number" :value="old('initial_payment_amount', '0')" min="0" step="0.01" />
+            @if(!$isEdit && auth()->user()->can('payments.create') && auth()->user()->can('invoices.issue'))
+                <x-form-input label="Received now" name="initial_payment_amount" id="paid-now" type="number" :value="$fieldValue('initial_payment_amount', '0')" min="0" step="0.01" />
                 <div id="initial-payment-details" class="space-y-3" hidden>
                     <x-form-select label="Payment method" name="initial_payment_method" :searchable="false" :placeholder="null">
-                        @foreach(['cash', 'bank', 'bkash', 'nagad', 'rocket', 'cheque', 'card', 'other'] as $method)<option value="{{ $method }}" @selected(old('initial_payment_method', 'cash') === $method)>{{ ucfirst($method) }}</option>@endforeach
+                        @foreach(['cash', 'bank', 'bkash', 'nagad', 'rocket', 'cheque', 'card', 'other'] as $method)<option value="{{ $method }}" @selected($fieldValue('initial_payment_method', 'cash') === $method)>{{ ucfirst($method) }}</option>@endforeach
                     </x-form-select>
-                    <x-form-input label="Payment date" name="initial_payment_date" type="date" :value="old('initial_payment_date', today()->toDateString())" />
-                    <x-form-input label="Transaction reference (optional)" name="initial_payment_reference" :value="old('initial_payment_reference')" maxlength="150" />
+                    <x-form-input label="Payment date" name="initial_payment_date" type="date" :value="$fieldValue('initial_payment_date', today()->toDateString())" />
+                    <x-form-input label="Transaction reference (optional)" name="initial_payment_reference" :value="$fieldValue('initial_payment_reference')" maxlength="150" />
                 </div>
             @else
-                <input type="hidden" name="initial_payment_amount" value="0">
+                <input type="hidden" name="initial_payment_amount" value="{{ $isEdit ? $invoice->received_amount : 0 }}">
             @endif
             <dl class="invoice-total-list border-t pt-4" aria-live="polite" aria-atomic="true">
                 @foreach(['subtotal' => 'Subtotal', 'discount' => 'Discount', 'tax' => 'Tax'] as $key => $label)
                     <div><dt>{{ $label }}</dt><dd data-total="{{ $key }}">0.00</dd></div>
                 @endforeach
                 <div class="invoice-grand-total"><dt>Invoice total <span id="summary-currency">BDT</span></dt><dd data-total="total">0.00</dd></div>
-                <div><dt>Received now</dt><dd data-total="paid">0.00</dd></div>
+                <div><dt>{{ $isEdit ? 'Received' : 'Received now' }}</dt><dd data-total="paid">0.00</dd></div>
                 <div class="font-semibold"><dt>Due</dt><dd data-total="due">0.00</dd></div>
             </dl>
             <details class="text-xs text-gray-500"><summary class="cursor-pointer">Internal cost & profit</summary><dl class="invoice-total-list mt-2"><div><dt>Service cost</dt><dd data-total="cost">0.00</dd></div><div><dt>Profit (excluding tax)</dt><dd data-total="profit">0.00</dd></div></dl></details>
-            <p class="text-xs text-gray-500">Final amounts are calculated on save. Save invoice records the payment; Save draft keeps the invoice unissued without a payment.</p>
-            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50"><i class="fas fa-check mr-2" aria-hidden="true"></i><span>{{ auth()->user()->can('invoices.issue') ? 'Save invoice' : 'Save draft invoice' }}</span></button>
-            @can('invoices.issue')<button type="submit" id="save-draft" data-mode="draft" class="w-full border rounded-lg px-5 py-3 text-sm font-semibold disabled:opacity-50">Save draft invoice</button>@endcan
+            <p class="text-xs text-gray-500">{{ $isEdit ? 'Final amounts are recalculated on save. Record or change payments from Payments. Invoice total cannot be less than the amount already received.' : 'Final amounts are calculated on save. Save invoice records the payment; Save draft keeps the invoice unissued without a payment.' }}</p>
+            <button type="submit" id="save-invoice" class="bg-primary text-white w-full px-5 py-3 rounded-lg font-semibold disabled:opacity-50"><i class="fas fa-check mr-2" aria-hidden="true"></i><span>{{ $isEdit ? 'Update invoice' : (auth()->user()->can('invoices.issue') ? 'Save invoice' : 'Save draft invoice') }}</span></button>
+            @unless($isEdit)
+                @can('invoices.issue')<button type="submit" id="save-draft" data-mode="draft" class="w-full border rounded-lg px-5 py-3 text-sm font-semibold disabled:opacity-50">Save draft invoice</button>@endcan
+            @endunless
             <p id="save-status" role="status" class="text-xs text-gray-500"></p>
             </div>
             </aside>
@@ -131,7 +143,7 @@
         @media(max-width:1100px) {.invoice-workspace {grid-template-columns:1fr;}.invoice-summary {position:static;}}
     </style>
     @php
-        $initialItems = old('items', [['quantity' => '1', 'unit' => 'item', 'rate' => '0', 'unit_cost' => '0']]);
+        $initialItems = $fieldValue('items', [['quantity' => '1', 'unit' => 'item', 'rate' => '0', 'unit_cost' => '0']]);
         $serviceData = $services->keyBy('id');
     @endphp
     @push('scripts')
@@ -216,6 +228,9 @@
             totals.paid = paid;
             totals.due = Math.max(0, round(totals.total - paid));
             paidInput.setCustomValidity(paid > totals.total ? 'Received now cannot exceed the total bill.' : '');
+            if (@json($isEdit)) {
+                container.querySelector('[data-field="rate"]')?.setCustomValidity(paid > totals.total ? 'Invoice total cannot be less than payments already received.' : '');
+            }
             const paymentDetails = document.getElementById('initial-payment-details');
             if (paymentDetails) {
                 paymentDetails.hidden = paid <= 0;
@@ -303,7 +318,7 @@
         window.addEventListener('pageshow', () => {
             const button = document.getElementById('save-invoice');
             syncCustomerMode();
-            button.querySelector('span').textContent = defaultMode === 'issue' ? 'Save invoice' : 'Save draft invoice';
+            button.querySelector('span').textContent = @json($isEdit) ? 'Update invoice' : (defaultMode === 'issue' ? 'Save invoice' : 'Save draft invoice');
             calculate();
             document.getElementById('save-status').textContent = '';
         });

@@ -3,6 +3,9 @@
     <div class="p-6 space-y-4">
         <div class="flex flex-wrap items-center gap-3">
             <a href="{{ route('invoices.index') }}" class="text-primary underline">Back to invoices</a>
+            @if($invoice->status !== 'cancelled')
+                @can('invoices.update')<a href="{{ route('invoices.edit', $invoice) }}" class="bg-primary text-white rounded-lg px-4 py-2">Edit invoice</a>@endcan
+            @endif
             @can('invoices.print')<a href="{{ route('invoices.print', $invoice) }}" target="_blank" rel="noopener" class="bg-primary text-white rounded-lg px-4 py-2">Print invoice</a>@endcan
             @if($invoice->status === 'draft')
                 @can('invoices.issue')<form action="{{ route('invoices.issue', $invoice) }}" method="POST">@csrf<button class="bg-primary text-white rounded-lg px-4 py-2">Issue invoice</button></form>@endcan
