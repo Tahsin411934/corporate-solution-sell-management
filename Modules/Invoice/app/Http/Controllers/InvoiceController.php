@@ -68,6 +68,7 @@ class InvoiceController extends Controller
             'customers' => Customer::orderBy('name')->get(['id', 'name']),
             'services' => Service::where('is_active', true)->orderBy('name')->get(['id', 'name', 'description', 'default_rate', 'default_cost']),
             'invoiceNumber' => app(\Modules\Invoice\Services\InvoiceNumberService::class)->preview(today()->toDateString()),
+            'companyDefaults' => \Modules\CompanySettings\Models\CompanySetting::active()->orderBy('id')->first(),
         ]);
     }
 

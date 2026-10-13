@@ -32,7 +32,7 @@
                 @if($invoice->due_date)<p class="invoice-small"><strong>Due :</strong> {{ $invoice->due_date->format('d F Y') }}</p>@endif
             </div></section>
         </div>
-        <section class="invoice-title"><h3>PROFESSIONAL FEE BILL</h3><p>Tax Return Preparation &amp; Submission</p></section>
+        <section class="invoice-title"><h3>{{ $invoice->bill_title ?? \Modules\Invoice\Models\Invoice::DEFAULT_BILL_TITLE }}</h3>@if($invoice->bill_subtitle)<p>{{ $invoice->bill_subtitle }}</p>@endif</section>
         <table class="invoice-items">
             <colgroup><col class="item-sl"><col><col class="item-amount"></colgroup>
             <thead><tr><th>SL</th><th>PARTICULARS</th><th>AMOUNT ({{ $invoice->currency_code }})</th></tr></thead>

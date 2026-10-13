@@ -4,8 +4,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 class Invoice extends Model
 {
+    public const DEFAULT_BILL_TITLE = 'PROFESSIONAL FEE BILL';
+    public const DEFAULT_BILL_SUBTITLE = 'Tax Return Preparation & Submission';
     use SoftDeletes;
-    protected $fillable = ['company_setting_id', 'customer_id', 'referral_source', 'created_by', 'invoice_number', 'invoice_date', 'due_date', 'currency_code', 'discount_type', 'discount_value', 'tax_rate', 'payment_terms', 'notes'];
+    protected $fillable = ['company_setting_id', 'customer_id', 'referral_source', 'created_by', 'invoice_number', 'invoice_date', 'due_date', 'currency_code', 'discount_type', 'discount_value', 'tax_rate', 'payment_terms', 'notes', 'bill_title', 'bill_subtitle'];
     protected function casts(): array
     {
         return ['invoice_date' => 'date', 'due_date' => 'date', 'printed_at' => 'datetime', 'cancelled_at' => 'datetime', 'subtotal' => 'decimal:2', 'discount_value' => 'decimal:2', 'discount_amount' => 'decimal:2', 'tax_rate' => 'decimal:4', 'tax_amount' => 'decimal:2', 'total_amount' => 'decimal:2', 'total_cost' => 'decimal:2', 'total_profit' => 'decimal:2'];

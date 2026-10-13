@@ -20,7 +20,7 @@
     .bill-to strong {font-size:12pt;}
     .bill-details p + p {margin-top:1.3mm;}
     .bill-details {font-size:10pt;}
-    .invoice-title {text-align:center;margin:4mm auto 3.5mm;}
+    .invoice-title {text-align:center;margin:4mm auto 3.5mm;overflow-wrap:anywhere;}
     .invoice-title h3 {font-size:20pt;line-height:1.15;font-weight:800;color:#071f50;}
     .invoice-title p {display:inline-block;font-size:14pt;font-weight:700;color:#007ac0;border-bottom:.4mm solid #1679b8;padding:1mm 4mm 1.5mm;}
     .invoice-items {width:100%;border-collapse:collapse;table-layout:fixed;margin:0;}

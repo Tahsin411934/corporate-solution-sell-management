@@ -31,6 +31,8 @@ class CompanySetting extends Model
         'currency_symbol',
         'bank_details',
         'invoice_footer',
+        'bill_title',
+        'bill_subtitle',
         'authorized_person',
         'authorized_person_qualifications',
         'authorized_person_designation',

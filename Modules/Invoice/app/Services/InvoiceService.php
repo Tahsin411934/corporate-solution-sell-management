@@ -15,6 +15,11 @@ class InvoiceService
     public function create(array $data, int $userId): Invoice
     {
         return DB::transaction(function () use ($data, $userId) {
+            $company = CompanySetting::active()->orderBy('id')->first();
+            $data['bill_title'] = $data['bill_title'] ?? $company?->bill_title ?? Invoice::DEFAULT_BILL_TITLE;
+            if (!array_key_exists('bill_subtitle', $data)) {
+                $data['bill_subtitle'] = $company ? $company->bill_subtitle : Invoice::DEFAULT_BILL_SUBTITLE;
+            }
             if (!empty($data['auto_invoice_number'])) {
                 $data['invoice_number'] = app(InvoiceNumberService::class)->next($data['invoice_date']);
             }
@@ -27,8 +32,8 @@ class InvoiceService
             $invoice = Invoice::create(Arr::only($data, [
                 'customer_id', 'referral_source', 'invoice_number', 'invoice_date',
                 'due_date', 'currency_code', 'discount_type', 'discount_value',
-                'tax_rate', 'payment_terms', 'notes',
-            ]) + ['created_by' => $userId, 'company_setting_id' => CompanySetting::active()->orderBy('id')->value('id')]);
+                'tax_rate', 'payment_terms', 'notes', 'bill_title', 'bill_subtitle',
+            ]) + ['created_by' => $userId, 'company_setting_id' => $company?->id]);
             foreach (array_values($data['items']) as $index => $item) {
                 $this->items->create($invoice, Arr::only($item, [
                     'service_id', 'description', 'quantity', 'unit', 'rate', 'unit_cost',

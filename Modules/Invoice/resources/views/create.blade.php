@@ -43,6 +43,8 @@
                     <div class="md:col-span-2"><x-form-textarea label="Address" name="new_customer_data[address]" :value="old('new_customer_data.address', '')" maxlength="2000" /></div>
                 </div>
                 <x-form-input label="Referral source" name="referral_source" :value="old('referral_source')" maxlength="200" placeholder="Type referral source (optional)" />
+                <x-form-input label="Bill title" name="bill_title" maxlength="150" :value="old('bill_title', $companyDefaults->bill_title ?? \Modules\Invoice\Models\Invoice::DEFAULT_BILL_TITLE)" required />
+                <x-form-input label="Bill subtitle (optional)" name="bill_subtitle" maxlength="250" :value="old('bill_subtitle', isset($companyDefaults) ? $companyDefaults->bill_subtitle : \Modules\Invoice\Models\Invoice::DEFAULT_BILL_SUBTITLE)" />
                 <x-form-input label="Invoice date" name="invoice_date" type="date" :value="old('invoice_date', now()->toDateString())" required />
                 <x-form-input label="Due date" name="due_date" type="date" :value="old('due_date')" />
                 <x-form-input label="Currency code" name="currency_code" :value="old('currency_code', 'BDT')" pattern="[A-Z]{3}" maxlength="3" required />

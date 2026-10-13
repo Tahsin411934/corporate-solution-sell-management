@@ -27,6 +27,8 @@ class UpdateCompanySettingRequest extends FormRequest
             'currency_symbol' => ['sometimes', 'required', 'string', 'max:10'],
             'bank_details' => ['sometimes', 'nullable', 'array'],
             'invoice_footer' => ['sometimes', 'nullable', 'string', 'max:5000'],
+            'bill_title' => ['sometimes', 'required', 'string', 'max:150'],
+            'bill_subtitle' => ['sometimes', 'nullable', 'string', 'max:250'],
             'authorized_person' => ['sometimes', 'nullable', 'string', 'max:150'],
             'authorized_person_qualifications' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'authorized_person_designation' => ['sometimes', 'nullable', 'string', 'max:150'],

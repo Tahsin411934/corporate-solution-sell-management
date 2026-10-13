@@ -27,6 +27,8 @@ class StoreCompanySettingRequest extends FormRequest
             'currency_symbol' => ['required', 'string', 'max:10'],
             'bank_details' => ['nullable', 'array'],
             'invoice_footer' => ['nullable', 'string', 'max:5000'],
+            'bill_title' => ['sometimes', 'required', 'string', 'max:150'],
+            'bill_subtitle' => ['nullable', 'string', 'max:250'],
             'authorized_person' => ['nullable', 'string', 'max:150'],
             'authorized_person_qualifications' => ['nullable', 'string', 'max:1000'],
             'authorized_person_designation' => ['nullable', 'string', 'max:150'],
