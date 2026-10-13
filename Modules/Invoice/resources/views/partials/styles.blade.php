@@ -11,8 +11,8 @@
     .invoice-brand img {display:block;width:27mm;height:25mm;object-fit:contain;margin-left:16mm;}
     .invoice-brand h1 {font:700 21pt/1.1 Georgia,'Times New Roman',serif;letter-spacing:-.9px;color:#151515;}
     .invoice-heading {width:43%;text-align:center;color:#062d63;}
-    .invoice-heading h2 {font-size:28pt;font-weight:900;letter-spacing:1px;line-height:1;}
-    .invoice-heading span {display:block;width:31mm;height:.4mm;background:#075493;margin:3mm auto 0;}
+    .invoice-heading h2 {font-size:22pt;font-weight:700;letter-spacing:1.2px;line-height:1.2;}
+    .invoice-heading span {display:block;width:24mm;height:.25mm;background:#075493;margin:2mm auto 0;}
     .invoice-billing {display:grid;grid-template-columns:1.7fr 1fr;gap:2mm;}
     .invoice-panel {border:.25mm solid #62b3e5;break-inside:avoid;}
     .invoice-panel h3,.invoice-items th {background:linear-gradient(110deg,#0578b8,#09518e);color:#fff;font-size:11.5pt;font-weight:700;padding:2mm 3mm;}
@@ -21,8 +21,8 @@
     .bill-details p + p {margin-top:1.3mm;}
     .bill-details {font-size:10pt;}
     .invoice-title {text-align:center;margin:4mm auto 3.5mm;overflow-wrap:anywhere;}
-    .invoice-title h3 {font-size:16pt;line-height:1.15;font-weight:800;color:#071f50;}
-    .invoice-title p {display:inline-block;font-size:12pt;font-weight:700;color:#007ac0;border-bottom:.4mm solid #1679b8;padding:1mm 4mm 1.5mm;}
+    .invoice-title h3 {font-size:13pt;line-height:1.3;font-weight:700;letter-spacing:.3px;color:#071f50;}
+    .invoice-title p {display:inline-block;font-size:10pt;line-height:1.4;font-weight:500;color:#007ac0;border-bottom:.25mm solid #1679b8;padding:1mm 3mm;}
     .invoice-items {width:100%;border-collapse:collapse;table-layout:fixed;margin:0;}
     .invoice-items .item-sl {width:9%;}.invoice-items .item-amount {width:23%;}
     .invoice-items th,.invoice-items td {border:.25mm solid #66b8e8;}
